@@ -194,7 +194,7 @@ OverCluster <- function(feature.mat, k){
 #' @param k k of kmeans for over cluster. Default: 20
 #' @param min.prop The minimum proportion of cells required to support naming of
 #' the subcluster by a cell type. Default: 0
-#' @return
+#' @return A data.frame contains consensus predicted cell types.
 #' @export
 MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k = 20, min.prop = 0){
   ## check parameters
@@ -232,7 +232,8 @@ MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k
     })
     names(row.mv) <- paste0(all.vars, ".major_votes")
     row.mv
-  }) %>% do.call(rbind, .)
+  })
+  major.votes <- do.call(rbind, major.votes)
   rownames(major.votes) <- cluster.levels # rows = clusters, columns = xx.major_votes
   ## Mapping clusters to major cell types
   cell.types$over.clusters <- as.character(over.clusters[rownames(cell.types)])
@@ -281,7 +282,8 @@ KnnLabelTransfer <- function(pred.emb, ref.emb, ref.celltype, k=100) {
       votes = most.voted,
       perc = most.voted / length(xx)
     )
-  }) %>% do.call(rbind, .)
+  })
+  results <- do.call(rbind, results)
   rownames(results) <- nn.ranked$query.cell.names
   return(results)
 }

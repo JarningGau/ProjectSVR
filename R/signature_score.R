@@ -42,8 +42,9 @@ ComputeModuleScore.default <- function(x, gene.sets, min.size=20, batch.size=500
 
 
 #' @rdname ComputeModuleScore
+#' @param assay Name of the seurat object assay.
 #' @export
-ComputeModuleScore.Seurat <- function(x, gene.sets, min.size=20, batch.size=500, cores=1, assay = DefaultAssay(x), ...) {
+ComputeModuleScore.Seurat <- function(x, gene.sets, min.size=20, batch.size=500, cores=1, assay = Seurat::DefaultAssay(x), ...) {
   dge <- x[[assay]]@counts
   ras_mat <- ComputeModuleScore.default(x = dge, gene.sets, min.size, batch.size, cores)
   x[["AUCell"]] <- Seurat::CreateAssayObject(data = ras_mat)

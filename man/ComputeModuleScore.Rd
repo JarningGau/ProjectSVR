@@ -23,7 +23,7 @@ ComputeModuleScore(x, ...)
   min.size = 20,
   batch.size = 500,
   cores = 1,
-  assay = DefaultAssay(x),
+  assay = Seurat::DefaultAssay(x),
   ...
 )
 }
@@ -39,6 +39,8 @@ ComputeModuleScore(x, ...)
 \item{batch.size}{The number of cells were calculated for each batch. Default: 500}
 
 \item{cores}{number of threads for parallel computing. Default: 1}
+
+\item{assay}{Name of the seurat object assay.}
 }
 \value{
 A signature score matrix or Seurat object.

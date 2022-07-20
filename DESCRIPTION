@@ -1,16 +1,15 @@
 Type: Package
 Package: ProjectSVR
-Title: Projecting Query scRNA-seq Data Onto A Reference Atlas Via Support Vector Regression
+Title: Projecting Query scRNA-seq Data Onto A Reference Atlas Via Support
+    Vector Regression
 Version: 0.1.0
 Authors@R: 
     person("Jianing", "Gao", , "gjn1106@mail.ustc.edu.cn", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6599-2133"))
-Description: 
-    This package implements methods to: 
-    1. Extract signature gene sets for a given reference atlas; 
-    2. Transform the raw counts matrix to signature matrix;
-    3. Build a SVR model using signature matrix to predict reference embeddings; 
-    4. Project new query to reference.
+Description: This package implements methods to: 1. Extract signature gene
+    sets for a given reference atlas; 2. Transform the raw counts matrix
+    to signature matrix; 3. Build a SVR model using signature matrix to
+    predict reference embeddings; 4. Project new query to reference.
 License: MIT + file LICENSE
 Depends:
     R (>= 4.0.0)

@@ -25,7 +25,7 @@ MajorityVote(
 the subcluster by a cell type. Default: 0}
 }
 \value{
-
+A data.frame contains consensus predicted cell types.
 }
 \description{
 Majority voting to harmonise cell labels on given over clusters

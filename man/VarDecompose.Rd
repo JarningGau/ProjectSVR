@@ -24,6 +24,3 @@ A data.frame contains the results of variance decomposition.
 \description{
 Find Differential Expressed Genes via Variance Deomposition using Mixed Linear Model
 }
-\examples{
-
-}

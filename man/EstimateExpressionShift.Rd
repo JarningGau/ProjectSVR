@@ -41,6 +41,3 @@ A data.frame contains expression change between groups
 \description{
 Overall expression shift of the provided gene expression matrix.
 }
-\details{
-
-}

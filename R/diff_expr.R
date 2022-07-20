@@ -10,9 +10,7 @@ NULL
 #' threads. Default: -1
 #'
 #' @return A data.frame contains the results of variance decomposition.
-#' @importFrom magrittr %>%
 #' @export
-#' @examples
 #'
 VarDecompose <- function(data, meta.data, vd.vars, genes = "all", cores = -1) {
   ## check params
@@ -69,7 +67,9 @@ VarDecompose <- function(data, meta.data, vd.vars, genes = "all", cores = -1) {
   }, mc.cores = cores)
   )
   rownames(vd.res) <- genes
-  vd.res <- vd.res %>% as.data.frame() %>% dplyr::mutate(gene = rownames(.), .before=1)
+  vd.res %<>% as.data.frame()
+  vd.res <- vd.res %>% dplyr::mutate(gene = rownames(vd.res), .before=1)
+  # vd.res <- vd.res %>% as.data.frame() %>% dplyr::mutate(gene = rownames(.), .before=1)
   for (i in 3:ncol(vd.res)) {
     vd.res[[i]] %<>% as.numeric()
   }
@@ -139,10 +139,6 @@ sample.nmi <- function(X, cells.1, cells.2=NULL, N.cells=100, seed=1, sample.on.
 #' @param cores the number of threads used. Default: 1
 #'
 #' @return A data.frame contains expression change between groups
-#'
-#' @details
-#'
-#' @importFrom magrittr %>%
 #' @export
 EstimateExpressionShift <- function(counts, cell.types, groups, n.bins=20, min.cells=10, n.samples=100, n.cells = min.cells, n.cells.pairs = 45, cores=1){
   ## check params
@@ -170,7 +166,8 @@ EstimateExpressionShift <- function(counts, cell.types, groups, n.bins=20, min.c
   rownames(disc.expr) <- rownames(counts)
   ## get pairs of cells for comparation
   cell.counts <- table(cell.types, groups) %>% as.data.frame()
-  cell.counts <- subset(cell.counts, Freq >= min.cells)
+  cell.counts <- cell.counts[cell.counts$Freq >= min.cells, ]
+  # cell.counts <- subset(cell.counts, Freq >= min.cells)
   cell.type.group.pairs <- table(cell.counts$cell.types)
 
   ## only 2 levels in groups are surpported now. [2022-05-23]
@@ -199,14 +196,11 @@ EstimateExpressionShift <- function(counts, cell.types, groups, n.bins=20, min.c
     })
   }, mc.cores = cores)
   )
-  es.df <- es.df %>%
-    as.data.frame() %>%
-    dplyr::mutate(rep = 1:nrow(.), .before=1)
+  es.df %<>% as.data.frame()
+  es.df <- es.df %>% dplyr::mutate(rep = 1:nrow(es.df), .before=1)
+  # es.df <- es.df %>%
+  #   as.data.frame() %>%
+  #   dplyr::mutate(rep = 1:nrow(.), .before=1)
   return(es.df)
 }
-
-
-#' Cluster genes
-ClusterGenes <- function(){}
-
 

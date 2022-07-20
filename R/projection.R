@@ -248,7 +248,9 @@ RefineProjection <- function(object, p.val.cutoff = 1, p.adj.cutoff = 0.05, k = 
     warning("K =", k, "was too big, reset to", ncol(nn.dists), "according to the built knn graph.")
     k <- ncol(nn.dists)
   }
-  low.qual.map <- subset(cellmeta, p.val > p.val.cutoff | p.adj > p.adj.cutoff)
+  sel.rows <- cellmeta$p.val > p.val.cutoff | cellmeta$p.adj > p.adj.cutoff
+  low.qual.map <- cellmeta[sel.rows, ]
+  # low.qual.map <- subset(cellmeta, p.val > p.val.cutoff | p.adj > p.adj.cutoff)
   if (nrow(low.qual.map)) {
     cat("There are", nrow(low.qual.map), "cell(s) with low quanlity mapping coordinates under p <=", p.val.cutoff,
         "and p.adj <=", p.adj.cutoff, "\n")
