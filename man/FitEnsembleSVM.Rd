@@ -7,9 +7,11 @@
 FitEnsembleSVM(
   feature.mat,
   emb.mat,
+  cell.types = NULL,
   do.norm = NULL,
   batch.size = 5000,
   n.models = 100,
+  balance.cell.type = FALSE,
   cores = -1
 )
 }
@@ -18,11 +20,15 @@ FitEnsembleSVM(
 
 \item{emb.mat}{The embedding matrix, rows are cells, columns are dimensions.}
 
+\item{cell.types}{A named vector recording cell types.}
+
 \item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.}
 
 \item{batch.size}{The number of cells for each model. Default: 5000}
 
 \item{n.models}{The number of SVM model. Default: 100}
+
+\item{balance.cell.type}{A boolen determines whether performing balance sampling. Default: FALSE}
 
 \item{cores}{The number of CPU for training. Default: -1, use all available threads.}
 }

@@ -40,9 +40,10 @@ Imports:
 Suggests:
     sceasy (>= 0.0.6),
     Seurat (>= 4.1.0),
+    UCell (>= 1.3.1)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 SystemRequirements: anndata, cnmf (>= 1.3), sklearn
 Collate: 
     'cnmf.R'
@@ -53,4 +54,5 @@ Collate:
     'label_transfer.R'
     'projection.R'
     'signature_score.R'
+    'themes.R'
     'visualization.R'

@@ -107,7 +107,7 @@ FitEnsemblMultiClassif <- function(feature.mat, cell.types, do.norm = NULL, mlr3
     model = celltype_lrns,
     features = colnames(feature.mat)
   )
-  class(model) <- "EmsemblMultiClassif"
+  class(model) <- "Classif"
   return(model)
 }
 
@@ -248,9 +248,9 @@ MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k
 
 #' Label transfer via KNN
 #'
-#' @param pred.emb The predicted embedding matrix of query data.
+#' @param query.emb The embedding matrix of query data.
 #' @param ref.emb The embedding matrix of reference atlas.
-#' @param ref.celltype A named vector <name, value> = <cellname, celltype>.
+#' @param ref.labels A named vector <cell name, labels>.
 #' @param k K nearest neighbors used. Default: 100
 #'
 #' @return A data.frame contains prediction results.
@@ -258,31 +258,46 @@ MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k
 #' @importFrom magrittr %>%
 #' @export
 #'
-KnnLabelTransfer <- function(pred.emb, ref.emb, ref.celltype, k=100) {
+KnnLabelTransfer <- function(query.emb, ref.emb, ref.labels, k=100) {
   ## check parameters
-  if (is.null(names(ref.celltype))) {
-    stop("'ref.celltype' should be named.")
+  if (is.null(names(ref.labels))) {
+    stop("'ref.labels' should be named.")
   }
-  common.cells <- intersect(rownames(ref.emb), names(ref.celltype))
-  if (length(common.cells) != nrow(ref.emb) || length(common.cells) != length(ref.celltype)) {
-    stop("The rownames of 'ref.emb' should be consistant with the names of 'ref.celltype'.")
+  common.cells <- intersect(rownames(ref.emb), names(ref.labels))
+  if (length(common.cells) != nrow(ref.emb) || length(common.cells) != length(ref.labels)) {
+    stop("The rownames of 'ref.emb' should be consistant with the names of 'ref.labels'.")
   }
-  # reorder ref.celltype
-  ref.celltype <- ref.celltype[rownames(ref.emb)]
+  # reorder ref.labels
+  ref.labels <- ref.labels[rownames(ref.emb)]
   ## 1. build kNN graph on ref.emb
   ## 2. find k nearest neightbors for query on ref.emb
-  nn.ranked <- NNHelper(data = ref.emb, query = pred.emb, k = k+1, method = "rann")
+  nn.ranked <- NNHelper(data = ref.emb, query = query.emb, k = k+1, method = "rann")
   ## 3. label transfer
-  results <- pbapply::pblapply(1:nrow(nn.ranked$nn.idx), function(i) {
-    xx <- nn.ranked$nn.idx[i, ]
-    n.celltype <- sort(table(ref.celltype[xx]), decreasing = TRUE)
-    most.voted <- n.celltype[1]
-    data.frame(
-      celltype.pred = names(most.voted),
-      votes = most.voted,
-      perc = most.voted / length(xx)
-    )
-  })
+  if (is.character(ref.labels) || is.factor(ref.labels)) {
+    results <- pbapply::pblapply(1:nrow(nn.ranked$nn.idx), function(i) {
+      xx <- nn.ranked$nn.idx[i, ]
+      n.celltype <- sort(table(ref.labels[xx]), decreasing = TRUE)
+      most.voted <- n.celltype[1]
+      data.frame(
+        labels = names(most.voted),
+        votes = most.voted,
+        perc = most.voted / length(xx)
+      )
+    })
+  } else if (is.numeric(ref.labels)) {
+    results <- pbapply::pblapply(1:nrow(nn.ranked$nn.idx), function(i) {
+      xx <- nn.ranked$nn.idx[i, ]
+      votes <- sum(is.na(ref.labels[xx]))
+      median.val <- median(ref.labels[xx], na.rm = T)
+      data.frame(
+        labels = median.val,
+        votes = votes,
+        perc = votes / length(xx)
+      )
+    })
+  } else {
+    stop("ref.labels should be factor, character, or numeric.")
+  }
   results <- do.call(rbind, results)
   rownames(results) <- nn.ranked$query.cell.names
   return(results)

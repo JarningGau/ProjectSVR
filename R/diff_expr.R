@@ -55,7 +55,10 @@ VarDecompose <- function(data, meta.data, vd.vars, genes = "all", cores = -1) {
     tryCatch({
       model <- suppressWarnings(lme4::lmer(stats::as.formula(modelFormulaStr), data = data.model, REML = TRUE, verbose = FALSE))
       results <- as.data.frame(lme4::VarCorr(model))
+      rownames(results) <- results$grp
+      results <- results[c(vd.vars, "Residual"), ]
       frac.var <- results$vcov / sum(results$vcov)
+
       res.tmp <- c("OK", frac.var)
     },
     error = function(e) {

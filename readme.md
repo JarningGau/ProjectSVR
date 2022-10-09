@@ -6,7 +6,7 @@
 
 - `2022-07-11` 
 
-  `TODO` import `mlr3verse` properly
+  `Done` import `mlr3verse` properly
 
   `Done` Add normalization method for `FitEnsemblSVM()` `FitEnsemblMultiClassif()` `PredictNewdata()` and `ProjectNewdata()`
 

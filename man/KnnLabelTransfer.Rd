@@ -4,14 +4,14 @@
 \alias{KnnLabelTransfer}
 \title{Label transfer via KNN}
 \usage{
-KnnLabelTransfer(pred.emb, ref.emb, ref.celltype, k = 100)
+KnnLabelTransfer(query.emb, ref.emb, ref.labels, k = 100)
 }
 \arguments{
-\item{pred.emb}{The predicted embedding matrix of query data.}
+\item{query.emb}{The embedding matrix of query data.}
 
 \item{ref.emb}{The embedding matrix of reference atlas.}
 
-\item{ref.celltype}{A named vector <name, value> = <cellname, celltype>.}
+\item{ref.labels}{A named vector <cell name, labels>.}
 
 \item{k}{K nearest neighbors used. Default: 100}
 }

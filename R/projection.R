@@ -15,13 +15,15 @@ NULL
 #'
 #' @param feature.mat A signature score matrix, rows are cells, columns are features.
 #' @param emb.mat The embedding matrix, rows are cells, columns are dimensions.
+#' @param cell.types A named vector recording cell types.
 #' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.
 #' @param batch.size The number of cells for each model. Default: 5000
 #' @param n.models The number of SVM model. Default: 100
+#' @param balance.cell.type A boolen determines whether performing balance sampling. Default: FALSE
 #' @param cores The number of CPU for training. Default: -1, use all available threads.
 #' @return a list of trained learners.
 #' @export
-FitEnsembleSVM <- function(feature.mat, emb.mat, do.norm=NULL, batch.size=5000, n.models=100, cores=-1) {
+FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm=NULL, batch.size=5000, n.models=100, balance.cell.type=FALSE, cores=-1) {
   ## check parameters
   if (!is.data.frame(feature.mat)) {
     warning("The 'feature.mat' should be a data.frame, enforce convert to data.frame.")
@@ -63,10 +65,21 @@ FitEnsembleSVM <- function(feature.mat, emb.mat, do.norm=NULL, batch.size=5000, 
     stop(sprintf("Undefined 'do.norm': %s.", do.norm))
   }
   ## 1. Create regression tasks
+  .getP <- function(labels) {
+    labels.freq <- as.vector(table(labels))
+    names(labels.freq) <- names(table(labels))
+    1 / (labels.freq[labels] * length(labels.freq))
+  }
   ## 1.1 sampling
   message(sprintf("Creating regression tasks: size=%s, n=%s", batch.size, n=n.models))
+  if (balance.cell.type & !is.null(cell.types)) {
+    message("Balanced sampling.")
+    p <- .getP(cell.types)
+  } else {
+    p <- NULL
+  }
   train.datasets <- pbapply::pblapply(1:n.models, function(i) {
-    row.ids <- sample(rownames(feature.mat), size = batch.size)
+    row.ids <- sample(rownames(feature.mat), size = batch.size, replace = F, prob = p)
     as.data.frame(cbind(feature.mat[row.ids, , drop=FALSE], emb.mat[row.ids, , drop=FALSE]))
   })
   ## 1.2 build tasks for each targets
@@ -94,7 +107,7 @@ FitEnsembleSVM <- function(feature.mat, emb.mat, do.norm=NULL, batch.size=5000, 
     model = coords_lrns,
     features = colnames(feature.mat)
   )
-  class(model) <- "EnsembleSVM"
+  class(model) <- "Regression"
   return(model)
 }
 
@@ -117,7 +130,8 @@ ProjectNewdata <- function(feature.mat, model, do.norm=NULL, int.fun=stats::medi
   }
   bad.features <- setdiff(colnames(feature.mat), model$features)
   if (length(bad.features) > 0) {
-    stop(sprintf("These features are not in the model: %s", paste(bad.features, collapse = " ")))
+    warning(sprintf("These features are not in the model: %s. Dropping them (it).", paste(bad.features, collapse = " ")))
+    feature.mat <- feature.mat[, !(colnames(feature.mat) %in% bad.features), drop = FALSE]
   }
   no.features <- setdiff(model$features, colnames(feature.mat))
   if (length(no.features) > 0) {
