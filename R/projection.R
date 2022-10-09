@@ -144,14 +144,14 @@ ProjectNewdata <- function(feature.mat, model, do.norm=NULL, int.fun=stats::medi
   }
   cores <- ifelse(cores > 0, cores, parallel::detectCores())
   ## Normalization: by cells (rows)
-  if (do.norm == "L1") {
+  if (is.null(do.norm)) {
+    message("Skip normalization ...")
+  } else if (do.norm == "L1") {
     message("L1 normalization ...")
     newdata <- L1norm(newdata)
   } else if (do.norm == "L2") {
     message("L2 normalization ...")
     newdata <- L2norm(newdata)
-  } else if (is.null(do.norm)) {
-    message("Skip normalization ...")
   } else {
     stop(sprintf("Undefined 'do.norm': %s.", do.norm))
   }
