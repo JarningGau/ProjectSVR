@@ -53,14 +53,14 @@ FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm=NULL, 
     colnames(emb.mat) <- gsub("-", "_", colnames(emb.mat))
   }
   ## 0. Normalize: by cells (rows)
-  if (do.norm == "L1") {
+  if (is.null(do.norm)) {
+    message("Skip normalization ...")
+  } else if (do.norm == "L1") {
     message("L1 normalization ...")
     feature.mat <- L1norm(feature.mat)
   } else if (do.norm == "L2") {
     message("L2 normalization ...")
     feature.mat <- L2norm(feature.mat)
-  } else if (is.null(do.norm)) {
-    message("Skip normalization ...")
   } else {
     stop(sprintf("Undefined 'do.norm': %s.", do.norm))
   }
