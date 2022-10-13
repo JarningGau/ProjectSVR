@@ -1,0 +1,62 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+
+```{r echo=FALSE, results="hide", message=FALSE}
+library("badger")
+```
+
+# ProjectSVR
+
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+`r badge_devel("JarningGau/ProjectSVR", "green")`
+
+<img src="https://raw.githubusercontent.com/JarningGau/blog_images/master/20221011/ProjectSVR-workflow.png" width="890"/>
+
+ProjectSVR is a machine learning-based algorithm for mapping the query cells onto well-constructed reference atlas.
+
+## Installation
+
+Install the development version from GitHub use:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("JarningGau/ProjectSVR")
+```
+
+## Usage/Demos
+
+### Tutorials
+
+- Mapping PBMC dataset onto pre-build PBMC reference (from DISCO database).
+
+- Mapping tumor-infiltrated T cell to pan-cancer T cell landscape.
+
+### Downloading pre-built references:
+
+- You can download pre-built references from [Zenodo]().
+
+## Installation notes
+
+`ProjectSVR` has been successfully installed on Linux using the devtools package to install from GitHub.
+
+Dependencies:
+
+- R >= 4.1
+- reticulate
+- AUCell
+
+## Reproducing results from manuscript
+
+Code to reproduce results from the Gao et al. manuscript is available on github.com/jarninggau/ProjectSVR_reproducibility.
+
