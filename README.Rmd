@@ -21,7 +21,7 @@ library("badger")
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 `r badge_devel("JarningGau/ProjectSVR", "green")`
 
-<img src="https://raw.githubusercontent.com/JarningGau/blog_images/master/20221011/ProjectSVR-workflow.png" width="890"/>
+<img src="./ProjectSVR-workflow.png" width="890"/>
 
 ProjectSVR is a machine learning-based algorithm for mapping the query cells onto well-constructed reference atlas.
 
