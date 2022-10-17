@@ -1,15 +1,17 @@
 
 # ProjectSVR
 
+<img src="./ProjectSVR-logo.png" height="200" align="right" />
+
 [![Project Status: Active - The project has reached a stable, usable
 state and is being actively
 developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![](https://img.shields.io/badge/devel%20version-0.1.0-green.svg)](https://github.com/JarningGau/ProjectSVR)
 
-<img src="./ProjectSVR-workflow.png" width="890"/>
-
-ProjectSVR is a machine learning-based algorithm for mapping the query
+`ProjectSVR` is a machine learning-based algorithm for mapping the query
 cells onto well-constructed reference atlas.
+
+<img src="./ProjectSVR-workflow.png" width="600" align="left" />
 
 ## Installation
 
