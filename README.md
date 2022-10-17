@@ -11,7 +11,7 @@ developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repo
 `ProjectSVR` is a machine learning-based algorithm for mapping the query
 cells onto well-constructed reference atlas.
 
-<img src="./ProjectSVR-workflow.png" width="600" align="left" />
+<img src="./ProjectSVR-workflow.png" width="600" />
 
 ## Installation
 
