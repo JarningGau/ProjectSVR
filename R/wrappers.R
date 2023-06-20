@@ -81,7 +81,7 @@ LabelTransfer <- function(seu.q, reference, reduction.q = "ref.umap",
   if(!inherits(seu.q, "Seurat")){
     stop("Input 'seu.q' must be a Seurat object.")
   }
-  if (!(reduction.q %in% Reductions(seu.q))) {
+  if (!(reduction.q %in% names(seu.q@reductions))) {
     stop("Input 'reduction.q' does not exist in seu.q.")
   }
 
