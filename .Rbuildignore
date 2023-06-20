@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.gitignore$
+^\.git$
+^LICENSE\.md$
+^README\.Rmd$
+^LOG\.md$
+^\.Rdata$
+^\.Rhistory$
+^ProjectSVR-workflow\.png$
+^ProjectSVR-logo\.png$
