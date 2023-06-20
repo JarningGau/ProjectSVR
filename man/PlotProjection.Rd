@@ -11,6 +11,7 @@ PlotProjection(
   ref.colors = NULL,
   ref.alpha = 0.5,
   ref.size = 0.5,
+  ref.emb.col = paste0("UMAP_", 1:2),
   query.reduction = "ref.umap",
   query.size = 1,
   query.alpha = 1,
@@ -31,6 +32,8 @@ PlotProjection(
 \item{ref.alpha}{Alpha value for reference data points. Default: 0.5}
 
 \item{ref.size}{Size of reference data points. Default: 0.5}
+
+\item{ref.emb.col}{The column names storing the reference embeddings in reference model.}
 
 \item{query.reduction}{Reduction name to use for query data. Default: 'ref.umap'}
 

@@ -5,6 +5,7 @@ NULL
 #' Visualizing the projected query cells on reference via a density plot.
 #'
 #' @importFrom ggplot2 aes geom_point geom_text scale_color_manual guides facet_wrap
+#' @importFrom rlang .data
 #'
 #' @param seu.q A query Seurat object containing the projected reference embeddings.
 #' @param reference Reference model.
@@ -12,6 +13,7 @@ NULL
 #' @param ref.colors Vector of colors to be used for reference data points. Default: NULL
 #' @param ref.alpha Alpha value for reference data points. Default: 0.5
 #' @param ref.size Size of reference data points. Default: 0.5
+#' @param ref.emb.col The column names storing the reference embeddings in reference model.
 #' @param query.reduction Reduction name to use for query data. Default: 'ref.umap'
 #' @param query.size Size of query data points. Default: 1
 #' @param query.alpha Alpha value for query data points. Default: 1
@@ -22,8 +24,10 @@ NULL
 #' @return A ggplot object.
 #' @export
 #'
-PlotProjection <- function(seu.q, reference, ref.color.by, ref.colors = NULL,
-                           ref.alpha = 0.5, ref.size = 0.5, query.reduction = "ref.umap",
+PlotProjection <- function(seu.q, reference, ref.color.by,
+                           ref.colors = NULL, ref.alpha = 0.5, ref.size = 0.5,
+                           ref.emb.col = paste0("UMAP_", 1:2),
+                           query.reduction = "ref.umap",
                            query.size = 1, query.alpha = 1, split.by = NULL,
                            n.row = NULL, legend.ncol = 1) {
   # Check if seu.q is a Seurat object
@@ -42,6 +46,10 @@ PlotProjection <- function(seu.q, reference, ref.color.by, ref.colors = NULL,
   if (!is.null(ref.colors) && (!is.vector(ref.colors) || length(ref.colors) != nlevels(reference$ref.cellmeta$meta.data[, ref.color.by]))) {
     stop("Invalid ref.colors argument. It must be NULL or a valid color vector of length equal to the number of levels in ref.color.by")
   }
+  #
+  if (!all(ref.emb.col %in% colnames(reference$ref.cellmeta$meta.data)) || length(ref.emb.col) != 2) {
+    stop(paste0("Invalid ref.emb.col argument '", paste(ref.emb.col), "'. They must be valid column names in reference$ref.cellmeta$meta.data"))
+  }
   # Check if query.reduction is a valid reduction name in seu.q
   if (!query.reduction %in% names(seu.q@reductions)) {
     stop(paste0("Invalid query.reduction argument '", query.reduction, "'. It must be a valid reduction name in seu.q"))
@@ -56,13 +64,13 @@ PlotProjection <- function(seu.q, reference, ref.color.by, ref.colors = NULL,
   if (is.null(ref.colors)) {
     ref.colors <- reference$ref.cellmeta$colors
   }
-  ref.p <- ggplot(ref.data, aes(UMAP_1, UMAP_2, color = get(ref.color.by))) +
+  ref.p <- ggplot(ref.data, aes(get(ref.emb.col[1]), get(ref.emb.col[2]), color = get(ref.color.by))) +
     geom_point(size = ref.size, alpha = ref.alpha) +
-    geom_text(inherit.aes = F, data = ref.text, mapping = aes(x, y, label = label), size = 5)
+    xlab("Dimension 1") + ylab("Dimension 2")
 
   if (!is.null(ref.text)) {
-    ref.p <- ref.p + geom_text(inherit.aes = F, data = ref.text,
-                               mapping = aes(x, y, label = label), size = 5)
+    ref.p <- ref.p +
+      geom_text(inherit.aes = F, data = ref.text, mapping = aes(.data$x, .data$y, label = .data$label), size = 5)
   }
   if (!is.null(ref.colors)) {
     ref.p <- ref.p + scale_color_manual(values = ref.colors)
@@ -72,7 +80,7 @@ PlotProjection <- function(seu.q, reference, ref.color.by, ref.colors = NULL,
                                 ncol = legend.ncol)) +
     DimTheme()
 
-  dim.key <- seu.q[["ref.umap"]]@key
+  dim.key <- seu.q[[query.reduction]]@key
   qx <- paste0(dim.key, 1)
   qy <- paste0(dim.key, 2)
   query.data <- Seurat::FetchData(seu.q, vars = c(qx, qy, split.by))
