@@ -9,7 +9,7 @@ MapQuery(seu.q, reference, assay.q = "RNA", ncores = 1)
 \arguments{
 \item{seu.q}{A query Seurat object.}
 
-\item{reference}{Reference model}
+\item{reference}{Reference model.}
 
 \item{assay.q}{The assay used for reference mapping.}
 
