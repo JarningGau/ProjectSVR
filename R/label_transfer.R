@@ -256,6 +256,7 @@ MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k
 #' @return A data.frame contains prediction results.
 #'
 #' @importFrom magrittr %>%
+#' @importFrom stats median
 #' @export
 #'
 KnnLabelTransfer <- function(query.emb, ref.emb, ref.labels, k=100) {
