@@ -13,7 +13,7 @@ NULL
 #'
 #' @export
 #'
-MapQuery.projectSVR <- function(seu.q, reference, assay.q = "RNA", ncores = 1) {
+MapQuery <- function(seu.q, reference, assay.q = "RNA", ncores = 1) {
   ## check parameters
   if (!inherits(seu.q, "Seurat")) stop("seu.q argument must be a Seurat object")
   if (!is.list(reference) || !all(c("genes", "models") %in% names(reference))) {
