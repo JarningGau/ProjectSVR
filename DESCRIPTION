@@ -12,7 +12,7 @@ Description: This package implements methods to: 1. Extract signature gene
     predict reference embeddings; 4. Project new query to reference.
 License: MIT + file LICENSE
 Depends:
-    R (>= 4.0.0)
+    R (>= 4.0.0),
 Imports:
     AUCell (>= 1.16.0),
     cowplot (>= 1.1.1),
@@ -34,7 +34,7 @@ Imports:
     permute (>= 0.9.7),
     RANN (>= 2.6.1),
     reticulate (>= 1.24),
-    rlang (>= 1.0.2),
+    rlang (>= 1.0.6),
     stats (>= 4.1.2),
     utils (>= 4.1.2)
 Suggests:
@@ -55,3 +55,4 @@ Collate:
     'signature_score.R'
     'themes.R'
     'visualization.R'
+    'wrappers.R'
