@@ -113,11 +113,12 @@ PlotProjection <- function(seu.q, reference, ref.color.by,
 #' PercentageStat(mtcars, "cyl", "gear")
 #'
 #' @import dplyr
+#' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #' @export
 PercentageStat <- function(cellmeta, by, fill) {
   # Check if cellmeta is a data.frame or tibble
-  if (!is.data.frame(cellmeta) && !is_tibble(cellmeta)) {
+  if (!is.data.frame(cellmeta)) {
     stop("cellmeta must be a data.frame or tibble.")
   }
 
@@ -132,11 +133,11 @@ PercentageStat <- function(cellmeta, by, fill) {
   }
   cellmeta %>%
     group_by_at(by) %>%
-    mutate(sample.cells = n()) %>%
+    mutate(margin.cells = n()) %>%
     ungroup() %>%
     group_by_at(c(by, fill)) %>%
     select(matches(by), matches(fill), "margin.cells") %>%
-    mutate(cells = n(), proportion = cells / sample.cells) %>%
+    mutate(cells = n(), proportion = .data$cells / .data$margin.cells) %>%
     distinct()
 }
 
