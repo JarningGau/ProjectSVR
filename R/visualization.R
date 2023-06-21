@@ -98,3 +98,45 @@ PlotProjection <- function(seu.q, reference, ref.color.by,
   }
   p
 }
+
+#' Calculate cell population percentage
+#'
+#' This function calculates percentage statistics based on a given dataset and grouping variables.
+#'
+#' @param cellmeta A data frame containing cell metadata.
+#' @param by A character vector specifying the variable(s) used to group the data.
+#' @param fill A character vector specifying the variable used to fill the data.
+#'
+#' @return A data frame containing the calculated percentage statistics.
+#'
+#' @examples
+#' PercentageStat(mtcars, "cyl", "gear")
+#'
+#' @import dplyr
+#' @importFrom magrittr %>%
+#' @export
+PercentageStat <- function(cellmeta, by, fill) {
+  # Check if cellmeta is a data.frame or tibble
+  if (!is.data.frame(cellmeta) && !is_tibble(cellmeta)) {
+    stop("cellmeta must be a data.frame or tibble.")
+  }
+
+  # Check if by and fill are character vectors
+  if (!is.character(by) || !is.character(fill)) {
+    stop("by and fill must be character vectors.")
+  }
+
+  # Check if by and fill exist in cellmeta
+  if (!(by %in% names(cellmeta)) || !(fill %in% names(cellmeta))) {
+    stop("by and fill must be columns in cellmeta.")
+  }
+  cellmeta %>%
+    group_by_at(by) %>%
+    mutate(sample.cells = n()) %>%
+    ungroup() %>%
+    group_by_at(c(by, fill)) %>%
+    select(matches(by), matches(fill), "margin.cells") %>%
+    mutate(cells = n(), proportion = cells / sample.cells) %>%
+    distinct()
+}
+
