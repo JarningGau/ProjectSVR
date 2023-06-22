@@ -362,3 +362,48 @@ AbundanceTest <- function(cellmeta, celltype.col, sample.col, group.col) {
   test.df <- do.call(rbind, test.df)
   return(test.df)
 }
+
+#' Plot the Volcano Plot
+#'
+#' Volcano plot for visualizing the cellular abundance difference. This function
+#' accepts the outputs of `AbundanceTest()`.
+#'
+#' @param test.df A data frame from `AbundanceTest()`.
+#' @param p.value.cutoff The p-value cutoff for showing the cell type labels.
+#' Default: 0.001
+#' @param xlab The label for the x-axis. Default: NULL
+#' @param ylab The label for the y-axis. Default: NULL
+#' @param colors A vector of colors to be used in the plot.
+#'
+#' @return A ggplot object.
+#'
+#' @import ggplot2
+#' @importFrom rlang .data
+#'
+#' @export
+VolcanoPlot <- function(test.df, p.value.cutoff = 0.001, xlab = NULL, ylab = NULL, colors = NULL) {
+  p <- ggplot(test.df, aes(log2(.data$fold.change), .data$mean.perc,
+                           color = .data$celltype, size = -log10(.data$p.value) )) +
+    geom_point() +
+    geom_vline(xintercept = c(-1,1), color = "blue", linetype = "dashed") +
+    ggrepel::geom_text_repel(
+      inherit.aes = F, data = subset(test.df, .data$p.value < p.value.cutoff),
+      mapping = aes(log2(.data$fold.change), .data$mean.perc, label = .data$celltype),
+      nudge_x = .1, nudge_y = .01, size = 4) +
+    scale_y_continuous(labels = scales::percent_format(1L)) +
+    theme_classic(base_size = 15) +
+    theme(axis.text = element_text(color = "black"),
+          legend.position = "top")
+  if (!is.null(xlab)) {
+    p <- p + xlab(label = xlab)
+  }
+  if (!is.null(ylab)) {
+    p <- p + ylab(label = ylab)
+  }
+  if (is.null(colors)) {
+    # use the default color pallate
+    colors <- scales::hue_pal()(length(unique(test.df$celltype)))
+  }
+  p <- p + scale_color_manual(values = colors, guide= "none")
+  p
+}
