@@ -196,3 +196,84 @@ AlluviaPlot <- function(cellmeta, by, fill, colors = NULL, bar.width = 0.5, lege
           axis.line.y = element_blank())
   p
 }
+
+#' Create Group Preference Plot
+#'
+#' A function to create a heatmap that displays the O/E ratio of a two-column table grouped by a selected column.
+#'
+#' @param cellmeta A data frame.
+#' @param group.by A character string indicating the name of the column in `cellmeta` used for grouping.
+#' @param preference.on A character string indicating the name of the column in `cellmeta` used for calculating O/E ratio.
+#' @param palette A color palette to use in the plot. Default is "Blues".
+#' @param column_names_rot degree (0-360) to rotate x-axis labels. Default is 0.
+#' @param ... additional arguments passed to the 'Heatmap' function from ComplexHeatmap package.
+#'
+#' @return A heatmap that displays the O/E ratio of a two-column table grouped by a selected column.
+#'
+#' @importFrom RColorBrewer brewer.pal
+#' @import ggplot2
+#' @import ComplexHeatmap
+#' @importFrom grid grid.text gpar
+#' @importFrom stats quantile
+#'
+#' @examples
+#' data(mtcars)
+#' mtcars$cyl <- factor(mtcars$cyl)
+#' mtcars$carb <- factor(mtcars$carb)
+#' GroupPreferencePlot(mtcars, "cyl", "carb")
+#'
+#' @export
+GroupPreferencePlot <- function(cellmeta, group.by, preference.on, palette = "Blues", column_names_rot = 0, ...) {
+  # Check if cellmeta is a data frame
+  if (!is.data.frame(cellmeta)) {
+    stop("cellmeta must be a data frame")
+  }
+
+  # Check if group.by and preference.on are character variables in cellmeta
+  if (!(group.by %in% names(cellmeta)) || !(preference.on %in% names(cellmeta))) {
+    stop("group.by and preference.on must be character variables in cellmeta")
+  }
+
+  ## calculate O/E ratio
+  pop.stat.mat <- table(cellmeta[[group.by]], cellmeta[[preference.on]])
+  pop.stat.mat.o <- apply(pop.stat.mat, 1, function(xx) xx / sum(xx)) %>% t()
+  pop.stat.mat.e <- colSums(pop.stat.mat) / sum(pop.stat.mat)
+  pop.stat.mat.e <- matrix(rep(pop.stat.mat.e, nrow(pop.stat.mat)), ncol = nrow(pop.stat.mat)) %>% t()
+  pop.stat.mat.oe <- t(pop.stat.mat.o / pop.stat.mat.e)
+  pop.stat.mat.oe[is.na(pop.stat.mat.oe)] <- 1
+  col.names.order <- levels(cellmeta[[group.by]])
+  row.names.order <- rev(levels(cellmeta[[preference.on]]))
+  if (is.null(row.names.order)) {
+    pop.stat.mat.oe <- pop.stat.mat.oe[order(pop.stat.mat.oe[,1], decreasing = T), ]
+  } else {
+    pop.stat.mat.oe <- pop.stat.mat.oe[row.names.order, ]
+  }
+  if (is.null(col.names.order)) {
+    pop.stat.mat.oe <- pop.stat.mat.oe[, order(pop.stat.mat.oe[1,], decreasing = T)]
+  } else {
+    pop.stat.mat.oe <- pop.stat.mat.oe[, col.names.order]
+  }
+
+  ## plots
+
+  cut.off <- quantile(pop.stat.mat.oe, .95, na.rm = TRUE)
+  cut.off2 <- round(quantile(pop.stat.mat.oe, .9, na.rm = TRUE), 1)
+  pop.stat.mat.oe.tile <- ifelse(pop.stat.mat.oe > cut.off, cut.off, pop.stat.mat.oe)
+
+  colors <- tryCatch({
+    RColorBrewer::brewer.pal(n = 7, name = palette)
+  }, error = function(e) {
+    message(e$message, "Use default: Blues")
+    RColorBrewer::brewer.pal(n = 7, name = "Blues")
+  })
+
+  Heatmap(pop.stat.mat.oe.tile, name = "Ratio (o/e)", cluster_rows = F, cluster_columns = F, col = colors,
+          column_names_rot = column_names_rot,
+          cell_fun = function(j, i, x, y, width, height, fill) {
+            if (pop.stat.mat.oe[i, j] > cut.off2) {
+              grid.text(sprintf("%.2f", pop.stat.mat.oe[i, j]), x, y, gp = gpar(fontsize=10, col="white", fontface="bold"))
+            } else {
+              grid.text(sprintf("%.2f", pop.stat.mat.oe[i, j]), x, y, gp = gpar(fontsize=10, col="black"))
+            }
+          }, ...)
+}
