@@ -275,3 +275,90 @@ GroupPreferencePlot <- function(cellmeta, group.by, preference.on, palette = "Bl
             }
           }, ...)
 }
+
+#' Differential Cellular Abundance Test
+#'
+#' Computes a Wilcoxon rank sum test for each cell type between two groups.
+#'
+#' @param cellmeta A data frame containing metadata information about cells.
+#' @param celltype.col The name of the column in \code{cellmeta} that contains cell type information.
+#' @param sample.col The name of the column in \code{cellmeta} that contains sample identifiers.
+#' @param group.col The name of the column in \code{cellmeta} that specifies the grouping variable.
+#'
+#' @return A data frame containing results of Wilcoxon rank sum tests for each cell type.
+#'
+#' @details This function takes in a data frame \code{cellmeta}, a character string \code{celltype.col},
+#' a character string \code{sample.col}, and a character string \code{group.col} as input. It calculates
+#' fold change, mean percentage, p-value for each cell type using Wilcoxon rank sum test.
+#'
+#' @examples
+#' library(dplyr)
+#' data(iris)
+#'
+#' # Add some metadata to iris data frame
+#' iris$Sample_ID <- rep(paste0("sample", 1:10), each = 15)
+#' iris$Group <- rep(c("A","B"), each = 75)
+#'
+#' # Run the AbundanceTest function
+#' AbundanceTest(cellmeta = iris,
+#' celltype.col = "Species",
+#' sample.col = "Sample_ID",
+#' group.col = "Group")
+#'
+#' @importFrom stats wilcox.test
+#' @importFrom magrittr %>%
+#' @importFrom dplyr distinct
+#'
+#' @export
+AbundanceTest <- function(cellmeta, celltype.col, sample.col, group.col) {
+  stopifnot(is.data.frame(cellmeta),
+            is.character(celltype.col),
+            is.character(sample.col),
+            is.character(group.col))
+
+  # Check that celltype.col exists in cellmeta
+  if (!(celltype.col %in% colnames(cellmeta))) {
+    stop(paste0(celltype.col, " not found in cellmeta"))
+  }
+
+  # Check that sample.col exists in cellmeta
+  if (!(sample.col %in% colnames(cellmeta))) {
+    stop(paste0(sample.col, " not found in cellmeta"))
+  }
+
+  # Check that group.col exists in cellmeta
+  if (!(group.col %in% colnames(cellmeta))) {
+    stop(paste0(group.col, " not found in cellmeta"))
+  }
+  count.matrix <- table(cellmeta[[celltype.col]], cellmeta[[sample.col]])
+  count.matrix <- as.matrix(count.matrix)
+  count.matrix.norm <- apply(count.matrix, 2, function(xx) xx / sum(xx))
+
+  sample.meta <- cellmeta[, c(sample.col, group.col)] %>%
+    distinct() %>%
+    as.data.frame()
+  rownames(sample.meta) <- sample.meta[[sample.col]]
+  sample.meta[[sample.col]] <- NULL
+  sample.meta <- sample.meta[colnames(count.matrix), ]
+
+  celltypes <- sort(rownames(count.matrix.norm))
+
+  group.levels <- levels(cellmeta[[group.col]])
+  if (is.null(group.levels)) {
+    group.levels <- unique(cellmeta[[group.col]])
+  }
+
+  test.df <- lapply(celltypes, function(ct) {
+    c1 <- count.matrix.norm[ct, sample.meta == group.levels[1]]
+    c2 <- count.matrix.norm[ct, sample.meta == group.levels[2]]
+    res <- wilcox.test(c1, c2)
+    data.frame(
+      celltype = ct,
+      fold.change = mean(c2) / mean(c1),
+      p.value = res$p.value,
+      mean.perc = mean(c(c1,c2))
+    )
+  })
+  test.df <- do.call(rbind, test.df)
+  return(test.df)
+}
