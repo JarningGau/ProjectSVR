@@ -131,13 +131,68 @@ PercentageStat <- function(cellmeta, by, fill) {
   if (!(by %in% names(cellmeta)) || !(fill %in% names(cellmeta))) {
     stop("by and fill must be columns in cellmeta.")
   }
-  cellmeta %>%
+  data.stat <- as.data.frame(table(cellmeta[[by]], cellmeta[[fill]]))
+  colnames(data.stat)[1:2] <- c(by, fill)
+  data.stat <- data.stat %>%
     group_by_at(by) %>%
-    mutate(margin.cells = n()) %>%
-    ungroup() %>%
-    group_by_at(c(by, fill)) %>%
-    select(matches(by), matches(fill), "margin.cells") %>%
-    mutate(cells = n(), proportion = .data$cells / .data$margin.cells) %>%
-    distinct()
+    mutate(margin.freq = sum(.data$Freq)) %>%
+    mutate(proportion = .data$Freq / .data$margin.freq)
+  return(data.stat)
 }
 
+#' Plot Alluvial Plot
+#'
+#' @param cellmeta a data frame containing the cell metadata.
+#' @param by a character string specifying the column name in \code{cellmeta} which will be used to group the cells.
+#' @param fill a character string specifying the column name in \code{cellmeta} which will be used to fill the plot.
+#' @param colors (optional) vector of colours to use for filling the plot. If not specified, the default colour scheme will be used.
+#' @param bar.width a numeric value between 0 and 1 specifying the width of the bars in the plot.
+#' @param legend.ncol an integer specifying the number of columns in the legend.
+#'
+#' @return A ggplot object representing an alluvial plot.
+#'
+#' @importFrom ggplot2 ggplot geom_area geom_col scale_x_continuous scale_y_continuous guides guide_legend
+#' @importFrom dplyr group_by arrange mutate ungroup summarise filter
+#' @importFrom scales label_percent
+#' @importFrom rlang .data
+#' @importFrom magrittr %>%
+#'
+#' @examples
+#' AlluviaPlot(mtcars, "cyl", "gear")
+#'
+#' @export
+#' @references https://stackoverflow.com/questions/73372641/shaded-area-between-bars-using-ggplot2
+AlluviaPlot <- function(cellmeta, by, fill, colors = NULL, bar.width = 0.5, legend.ncol = 1) {
+  pop.stat <- PercentageStat(cellmeta, by, fill)
+
+  alluvia <- pop.stat %>%
+    group_by(get(by)) %>%
+    arrange(get(by), get(fill), by_group = TRUE) %>%
+    mutate(y = .data$proportion) %>%
+    ungroup() %>%
+    mutate(x = as.numeric(as.factor(get(by)))) %>%
+    group_by(get(by), get(fill)) %>%
+    summarise(x = c(.data$x - 0.25, .data$x, .data$x + 0.25), y = .data$y)
+  colnames(alluvia)[1:2] <- c(by, fill)
+
+  x.labels <- unique(alluvia[[by]])
+
+  p <- ggplot(alluvia %>% filter(.data$x %% 1 == 0), aes(.data$x, .data$y, fill = get(fill))) +
+    geom_area(data = alluvia, alpha = 0.4, position = 'fill') +
+    geom_col(width = bar.width, color = 'gray50', position = 'fill') +
+    scale_x_continuous(breaks = 1:length(x.labels), labels = x.labels) +
+    scale_y_continuous(labels = scales::label_percent()) +
+    guides(fill = guide_legend(ncol = legend.ncol))
+
+  if (!is.null(colors)) {
+    p <- p + scale_fill_manual(values = colors)
+  }
+  p <- p +
+    theme_classic(base_size = 15) +
+    theme(legend.title = element_blank(),
+          axis.text = element_text(color = "black"),
+          axis.title = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank())
+  p
+}
