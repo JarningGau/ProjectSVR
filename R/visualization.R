@@ -153,7 +153,6 @@ PercentageStat <- function(cellmeta, by, fill) {
 #'
 #' @importFrom ggplot2 ggplot geom_area geom_col scale_x_continuous scale_y_continuous guides guide_legend
 #' @importFrom dplyr group_by arrange mutate ungroup summarise filter
-#' @importFrom scales label_percent
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #'
@@ -210,7 +209,6 @@ AlluviaPlot <- function(cellmeta, by, fill, colors = NULL, bar.width = 0.5, lege
 #'
 #' @return A heatmap that displays the O/E ratio of a two-column table grouped by a selected column.
 #'
-#' @importFrom RColorBrewer brewer.pal
 #' @import ggplot2
 #' @import ComplexHeatmap
 #' @importFrom grid grid.text gpar
