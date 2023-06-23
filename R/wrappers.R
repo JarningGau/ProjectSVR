@@ -97,8 +97,8 @@ LabelTransfer <- function(seu.q, reference, reduction.q = "ref.umap",
     stop("Input 'ref.emb.col' must contain two column names for embedding coordinates.")
   }
 
-  # 检查输入的 ref.label.col 是否在 reference$ref.cellmeta 中存在
-  if(!(ref.label.col %in% colnames(reference$ref.cellmeta))){
+  # 检查输入的 ref.label.col 是否在 reference$ref.cellmeta$meta.data 中存在
+  if(!(ref.label.col %in% colnames(reference$ref.cellmeta$meta.data))){
     stop("Input 'ref.label.col' does not exist in reference$ref.cellmeta.")
   }
 
