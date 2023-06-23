@@ -407,3 +407,56 @@ VolcanoPlot <- function(test.df, p.value.cutoff = 0.001, xlab = NULL, ylab = NUL
   p <- p + scale_color_manual(values = colors, guide= "none")
   p
 }
+
+#' BoxPlot
+#'
+#' Create a box plot with jittered data points and significance testing.
+#'
+#' @param cellmeta A data frame containing information about the cells.
+#' @param sample.col The column name for the sample identifier in \code{cellmeta}.
+#' @param celltype.col The column name for the cell type in \code{cellmeta}.
+#' @param group.col The column name for the grouping variable in \code{cellmeta}.
+#' @param legend.ncol The number of columns for the legend (optional).
+#' @param celltypes.show A character vector specifying which cell types to show (optional).
+#'
+#' @return A ggplot object.
+#'
+#' @importFrom ggplot2 ggplot geom_boxplot geom_jitter facet_wrap labs theme_classic element_text element_blank
+#' @importFrom dplyr left_join distinct
+#' @importFrom rlang .data
+#'
+#' @export
+BoxPlot <- function(cellmeta, sample.col, celltype.col, group.col,
+                    legend.ncol = NULL, celltypes.show = NULL) {
+
+  data.stat <- PercentageStat(cellmeta = cellmeta, by = sample.col, fill = celltype.col)
+  sample.meta <- cellmeta[, c(sample.col, group.col)] %>% distinct()
+  rownames(sample.meta) <- sample.meta[[sample.col]]
+  data.stat <- left_join(data.stat, sample.meta, by = sample.col)
+  if (!is.null(celltypes.show)) {
+    data.stat <- subset(data.stat, get(celltype.col) %in% celltypes.show)
+  }
+
+  group.levels <- levels(data.stat[[group.col]])
+  comparisons <- utils::combn(group.levels, m = 2)
+  comparisons <- lapply(1:ncol(comparisons), function(j) comparisons[, j])
+
+  p <- ggplot(data.stat, aes(get(group.col), .data$proportion, color = get(group.col))) +
+    geom_boxplot(outlier.shape = NA, size = .8, width = .5) +
+    geom_jitter(size = 3, width = 0.2) +
+    ggsignif::geom_signif(comparisons = comparisons, color = "black", test = "wilcox.test") +
+    labs(x = "", y = "Frequency")
+  if (is.null(legend.ncol)) {
+    n.strips <- length(unique(data.stat[[celltype.col]]))
+    legend.ncol <- floor(sqrt(n.strips)) + 1
+    p <- p + facet_wrap(~get(celltype.col), ncol = legend.ncol, scales = "free_y")
+  } else {
+    p <- p + facet_wrap(~get(celltype.col), ncol = legend.ncol, scales = "free_y")
+  }
+  p <- p + theme_classic(base_size = 18) +
+    theme(axis.text = element_text(color = "black"),
+          strip.background = element_blank(),
+          strip.text = element_text(size = 12, face = "bold"),
+          legend.position = "none")
+  p
+}

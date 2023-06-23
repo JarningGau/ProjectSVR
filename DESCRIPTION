@@ -21,6 +21,7 @@ Imports:
     e1071 (>= 1.7.9),
     ggplot2 (>= 3.3.5),
     ggrepel (>= 0.9.1),
+    ggsignif (>= 0.6.3),
     magrittr (>= 2.0.3),
     Matrix (>= 1.4.1),
     methods (>= 4.1.2),
