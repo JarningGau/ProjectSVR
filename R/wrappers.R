@@ -42,9 +42,8 @@ MapQuery <- function(seu.q, reference, assay.q = "RNA", ncores = 1) {
   }
   if (matched.ratio < 70) {
     warning(sprintf("Only %s%% background genes were matched between query and reference", matched.ratio))
-  }
-  if (matched.ratio) {
-    message(sprintf("Only %s%% background genes were matched between query and reference", matched.ratio))
+  } else {
+    message(sprintf("%s%% background genes were matched between query and reference", matched.ratio))
   }
   counts <- seu.q[[assay.q]]@counts[genes.use, ]
   if (!rlang::is_installed("UCell")) {
@@ -57,7 +56,7 @@ MapQuery <- function(seu.q, reference, assay.q = "RNA", ncores = 1) {
   proj.obj <- ProjectNewdata(feature.mat = as.data.frame(gss.mat),
                              model = reference$models$umap,
                              do.norm = "L2", cores = ncores)
-  seu.q[["UCell"]] <- Seurat::CreateAssayObject(data = gss.mat)
+  seu.q[["UCell"]] <- Seurat::CreateAssayObject(data = t(gss.mat))
   seu.q[["ref.umap"]] <- Seurat::CreateDimReducObject(proj.obj@embeddings, key = "refUMAP_", assay = assay.q)
   return(seu.q)
 }
