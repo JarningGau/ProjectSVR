@@ -16,9 +16,7 @@ knitr::opts_chunk$set(
 library("badger")
 ```
 
-# ProjectSVR
-
-<img src="man/figures/ProjectSVR-logo.png" height="200" align="right" />
+# ProjectSVR <img src="man/figures/ProjectSVR-logo.png" align="right" />
 
 `r badge_devel("JarningGau/ProjectSVR", "green")`
 

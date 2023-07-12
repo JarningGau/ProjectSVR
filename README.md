@@ -1,7 +1,5 @@
 
-# ProjectSVR
-
-<img src="man/figures/ProjectSVR-logo.png" height="200" align="right" />
+# ProjectSVR <img src="man/figures/ProjectSVR-logo.png" align="right" />
 
 [![](https://img.shields.io/badge/devel%20version-0.1.0-green.svg)](https://github.com/JarningGau/ProjectSVR)
 
