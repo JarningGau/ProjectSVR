@@ -387,7 +387,7 @@ VolcanoPlot <- function(test.df, p.value.cutoff = 0.001, xlab = NULL, ylab = NUL
     geom_point() +
     geom_vline(xintercept = c(-1,1), color = "blue", linetype = "dashed") +
     ggrepel::geom_text_repel(
-      inherit.aes = F, data = subset(test.df, .data$p.value < p.value.cutoff),
+      inherit.aes = F, data = dplyr::filter(test.df, .data$p.value < p.value.cutoff),
       mapping = aes(log2(.data$fold.change), .data$mean.perc, label = .data$celltype),
       nudge_x = .1, nudge_y = .01, size = 4) +
     scale_y_continuous(labels = scales::percent_format(1L)) +
