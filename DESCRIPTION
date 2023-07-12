@@ -58,3 +58,5 @@ Collate:
     'themes.R'
     'visualization.R'
     'wrappers.R'
+URL: https://github.com/JarningGau/ProjectSVR
+BugReports: https://github.com/JarningGau/ProjectSVR/issues
