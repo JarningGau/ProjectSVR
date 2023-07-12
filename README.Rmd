@@ -18,22 +18,21 @@ library("badger")
 
 # ProjectSVR
 
-<img src="./ProjectSVR-logo.png" height="200" align="right" />
+<img src="man/figures/ProjectSVR-logo.png" height="200" align="right" />
 
-[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 `r badge_devel("JarningGau/ProjectSVR", "green")`
 
 `ProjectSVR` is a machine learning-based algorithm for mapping the query cells onto well-constructed reference atlas.
 
-<img src="./ProjectSVR-workflow.png" width="600" />
+<img src="man/figures/ProjectSVR-workflow.png" width="600" />
 
 
 ## Installation
 
 Install the development version from GitHub use:
 
-``` r
-# install.packages("devtools")
+```{r eval=FALSE}
+install.packages("devtools")
 devtools::install_github("JarningGau/ProjectSVR")
 ```
 
