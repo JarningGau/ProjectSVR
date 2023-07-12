@@ -37,7 +37,6 @@ Suggests:
     AUCell (>= 1.16.0),
     RColorBrewer (>= 1.1.3),
     scales (>= 1.2.1),
-    sceasy (>= 0.0.6),
     Seurat (>= 4.1.0),
     stats (>= 4.1.2),
     tidyverse (>= 1.3.2),
