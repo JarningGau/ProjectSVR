@@ -1,0 +1,179 @@
+---
+title: "Quick start of ProjectSVR"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+## Download related dataset
+
+```{r, results='hide'}
+library(ProjectSVR)
+library(Seurat)
+library(tidyverse)
+options(timeout = max(3600, getOption("timeout")))
+`%notin%` <- Negate(`%in%`)
+```
+
+```{r, eval=FALSE}
+# reference datass
+download.file(url = "https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds", destfile = "disco_pbmc_small.seurat.slim.rds")
+# query data
+download.file(url = "https://zenodo.org/record/8147304/files/query_pbmc_small.seurat.slim.rds", destfile = "query_pbmc_small.seurat.slim.rds")
+```
+
+
+## Build Reference Model
+
+```{r, fig.width=9, fig.height=5}
+seu.ref <- readRDS("disco_pbmc_small.seurat.slim.rds")
+
+DimPlot(seu.ref, pt.size = .4) +
+  scale_color_manual(values = seu.ref@misc$data.refplot$colors) +
+  geom_text(inherit.aes = F, data = seu.ref@misc$data.refplot$text.pos,
+            mapping = aes(x, y, label = label), size = 4)
+```
+
+### Extract signatures
+
+Here we extract the top25 marker genes for each cell type (ribosomal and mitochondrial genes were removed).
+
+```{r}
+data(ribo.genes)
+
+table(Idents(seu.ref))
+seu.ref[["RNA"]]@counts <- seu.ref[["RNA"]]@data
+seu.ref <- NormalizeData(seu.ref)
+all.markers <- mcFindAllMarkers(seu.ref, do.flatten = F, n.cores = 20)
+
+top.genes <- lapply(all.markers, function(xx){
+  yy <- subset(xx, p_val_adj < 1e-6 & avg_log2FC > log2(1.5))
+  yy <- subset(yy, Gene.name.uniq %notin% ribo.genes)
+  yy <- yy[!grepl("^MT-", yy$Gene.name.uniq), ]
+  head(yy$Gene.name.uniq, 25)
+})
+
+sapply(top.genes, length)
+names(top.genes) <- paste0("feature_", 1:length(top.genes))
+
+bg.genes <- do.call(c, top.genes) %>% unique()
+```
+
+### Transfer raw count matrix to gene set score matrix
+
+```{r}
+seu.ref <- seu.ref[bg.genes, ]
+seu.ref <- UCell::AddModuleScore_UCell(seu.ref, features = top.genes, ncores = 20)
+gss.mat <- select(seu.ref@meta.data, ends_with("_UCell"))
+```
+
+### Training reference model
+
+```{r}
+embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
+batch.size = 4000 # number of subsampled cells for each SVR model 
+n.models = 5      # number of SVR models trained
+umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
+                             emb.mat = embeddings.df,
+                             do.norm = "L2",
+                             batch.size = batch.size,
+                             n.models = n.models,
+                             cores = 5)
+```
+
+### Save the reference model
+
+ref.cellmeta stores:
+
+1. [optional] colors: for plots
+
+2. [optional] text.pos: text annotation on the plots
+
+3. meta.data: cell meta data (embeddings + cell type information)
+
+```{r}
+ref.cellmeta <- seu.ref@misc$data.refplot
+ref.cellmeta$meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "cell_type", "cell_subtype"))
+
+reference <- list(
+  "models" = list(
+    "umap" = umap.model
+  ),
+  "genes" = list(
+    "gene.sets" = top.genes, # list
+    "bg.genes" = bg.genes # vector
+  ),
+  "ref.cellmeta" = ref.cellmeta # list for reference plot
+)
+```
+
+## Map Query to Reference
+
+### Reference mapping
+
+```{r, fig.width=12, fig.height=5}
+seu.q <- readRDS("query_pbmc_small.seurat.slim.rds")
+seu.q[["RNA"]]@counts <- seu.q[["RNA"]]@data
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, ncores = 5)
+
+p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "cell_type", label = T)
+p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "cell_subtype", label = T)
+(p1 + p2) & ggsci::scale_color_d3("category20")
+```
+
+```{r, fig.width=18, fig.height=14}
+seu.q$cell_subtype2 <- seu.q$cell_subtype
+
+PlotProjection(seu.q, reference, split.by = "cell_subtype2", ref.color.by = "cell_subtype",
+               ref.size = .5, ref.alpha = .3, query.size = 1, query.alpha = .5, n.row = 4)
+```
+
+### Label transfer
+
+```{r, fig.width=9, fig.height=5}
+seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cell_subtype")
+
+DimPlot(seu.q, reduction = "ref.umap", group.by = "knn.pred.celltype") + 
+  scale_color_manual(values = reference$ref.cellmeta$colors)
+```
+
+```{r, fig.width=8, fig.height=5}
+data.stat <- table(seu.q$cell_subtype, seu.q$knn.pred.celltype)
+pheatmap::pheatmap(data.stat, cluster_cols = F,
+                   display_numbers = T, number_format = "%.0f",
+                   number_color = "black")
+```
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+
