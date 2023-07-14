@@ -40,7 +40,7 @@ options(timeout = max(3600, getOption("timeout")))
 `%notin%` <- Negate(`%in%`)
 ```
 
-```{r}
+```{r, eval=FALSE}
 # reference datass
 download.file(url = "https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds", destfile = "disco_pbmc_small.seurat.slim.rds")
 # query data

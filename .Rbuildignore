@@ -12,3 +12,6 @@
 ^CODE_OF_CONDUCT\.md$
 ^\.github$
 ^\.scripts$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

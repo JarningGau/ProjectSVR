@@ -1,0 +1,7 @@
+url: jarninggau.github.io/ProjectSVR/
+
+destination: docs
+
+template:
+  bootstrap: 5
+
