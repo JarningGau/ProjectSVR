@@ -20,6 +20,7 @@ NULL
 #' @slot mesh.points a table records coordinates (primary key, <X,Y>), knn.density,
 #' bin coordinates, bin.ID, and bin.density of each mesh point in data.frame.
 #' @slot cell2mp a named vector, records cell assignments to the nearest mesh point.
+#' @concept class
 #'
 GridDensity <- setClass(
   Class = "GridDensity",
@@ -41,6 +42,7 @@ GridDensity <- setClass(
 #' @param n.mesh.threshold Only bins with number of mesh pints no less than this value are retained. Default: -1
 #' @param ... Arguments passed to other methods.
 #' Default: max number of mesh points per bin minus 1.
+#' @concept meta_cell
 #' @export
 subset.GridDensity <- function(x, bin.density.threshold=NULL, mesh.density.threshold=-1, n.cells.threshold=10, n.mesh.threshold=-1, ...) {
   mesh.info <- x@mesh.points
@@ -84,6 +86,7 @@ subset.GridDensity <- function(x, bin.density.threshold=NULL, mesh.density.thres
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_point geom_tile scale_fill_viridis_c labs theme_bw theme element_blank element_text
 #' @importFrom ggplot2 geom_density
+#' @concept meta_cell
 plot.GridDensity <- function(x, ...) {
   object <- x
   cell.emb <- data.frame(X = object@data[,1], Y = object@data[,2])
@@ -158,7 +161,7 @@ plot.GridDensity <- function(x, ...) {
 #' @param n.mesh in each bin, density will be calculated around (n.mesh^2) points. Default: 3
 #' @param do.plot whether plot results. Default: TRUE.
 #' @returns a GridDensity object
-#'
+#' @concept meta_cell
 #' @export
 EstimateKnnDensity <- function(emb.mat, k=10, n.bins=50, n.mesh=2, do.plot=TRUE) {
   # check parameters
@@ -222,6 +225,7 @@ EstimateKnnDensity <- function(emb.mat, k=10, n.bins=50, n.mesh=2, do.plot=TRUE)
 #' @param by Merge raw counts by "bins" or "mesh.points". Default: "mesh.points"
 #' @param cores Number of threads, -1 means all available threads. Default: -1
 #' @return A gene expression matrix, rows are genes, columns are merged cells.
+#' @concept meta_cell
 #' @export
 MergeCells <- function(dge, gd, by = "mesh.points", cores=-1) {
   # check parameters

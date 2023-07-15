@@ -22,3 +22,4 @@ bin coordinates, bin.ID, and bin.density of each mesh point in data.frame.}
 \item{\code{cell2mp}}{a named vector, records cell assignments to the nearest mesh point.}
 }}
 
+\concept{class}

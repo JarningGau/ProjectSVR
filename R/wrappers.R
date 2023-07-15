@@ -11,7 +11,7 @@ NULL
 #' @return A Seurat object. The projected reference embeddings were saved in a
 #' dimension reduction object named 'ref.umap'. The gene set score were saved in
 #' a new assay named 'UCell'.
-#'
+#' @concept reference_mapping
 #' @export
 #'
 MapQuery <- function(seu.q, reference, assay.q = "RNA", ncores = 1) {
@@ -71,6 +71,7 @@ MapQuery <- function(seu.q, reference, assay.q = "RNA", ncores = 1) {
 #' @param k The K param for KNN model. Default is 10.
 #'
 #' @return A Seurat object. The predicted cell type is store in 'knn.pred.celltype' column.
+#' @concept label_transfer
 #' @export
 #'
 LabelTransfer <- function(seu.q, reference, reduction.q = "ref.umap",

@@ -17,3 +17,65 @@ navbar:
       menu:
       - text: Quick start
         href: articles/quick_start.html
+
+reference:
+- title: "Class"
+  desc: "Class defined in ProjectSVR"
+- contents:
+  - has_concept("class")
+
+- title: "Object interaction"
+  desc: "Functions for interacting with objects in ProjectSVR"
+- contents:
+  - has_concept("object")
+
+- title: "Meta cell"
+  desc: "Functions for making meta cells"
+- contents:
+  - has_concept("meta_cell")
+
+- title: "Feature selection"
+  desc: "Functions for extract signature gene sets"
+- contents:
+  - has_concept("extract_signature")
+
+- title: "Gene module score"
+  desc: "Functions for computing gene module score"
+- contents:
+  - has_concept("compute_module_score")
+
+
+- title: "Reference model construction"
+  desc: "Functions for training reference model"
+- contents:
+  - has_concept("training_model")
+
+- title: "Reference mapping"
+  desc: "Functions for reference mapping"
+- contents:
+  - has_concept("reference_mapping")
+
+- title: "Label transfer"
+  desc: "Functions for label transfer"
+- contents:
+  - has_concept("label_transfer")
+
+- title: "Differential cell population"
+  desc: "Functions for testing differential cell population"
+- contents:
+  - has_concept("differential_population")
+
+- title: "Visualization"
+  desc: "Functions for nice plots"
+- contents:
+  - has_concept("plot")
+
+- title: "Data"
+  desc: "Descriptions of data included with ProjectSVR"
+- contents:
+  - has_concept("data")
+
+- title: "Internal"
+  desc: "Internal functions"
+- contents:
+  - has_concept("internal")

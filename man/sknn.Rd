@@ -18,3 +18,4 @@ sknn(data, query = data, k = 5L, ...)
 \description{
 Run sklearn.neighbors.NearestNeighbors
 }
+\concept{internal}

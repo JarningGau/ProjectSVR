@@ -21,3 +21,4 @@ A gene expression matrix, rows are genes, columns are merged cells.
 \description{
 Merge cells around mesh points in each bin into pseudo-bulk gene expression matrix.
 }
+\concept{meta_cell}

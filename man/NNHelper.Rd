@@ -20,3 +20,4 @@ NNHelper(data, query = data, k, method, ...)
 \description{
 Internal helper function to dispatch to various neighbor finding methods
 }
+\concept{internal}

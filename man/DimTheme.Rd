@@ -9,3 +9,4 @@ DimTheme()
 \description{
 theme for DimPlot
 }
+\concept{plot}

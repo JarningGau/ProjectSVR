@@ -23,3 +23,4 @@ a GridDensity object
 \description{
 Estimate KNN density on 2d embedding.
 }
+\concept{meta_cell}

@@ -24,3 +24,4 @@ This class is initialized from a matrix of expression values Methods that operat
 \item{\code{neighbors}}{\code{Neighbor} class containing the nearest neighbors for calculating the projection metrics.}
 }}
 
+\concept{class}

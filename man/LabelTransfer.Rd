@@ -32,3 +32,4 @@ A Seurat object. The predicted cell type is store in 'knn.pred.celltype' column.
 \description{
 A wrapper for transferring reference cell labels to the query via KNN method.
 }
+\concept{label_transfer}

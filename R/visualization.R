@@ -116,6 +116,7 @@ PlotProjection <- function(seu.q, reference, ref.color.by,
 #' @import dplyr
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
+#' @concept differential_population
 #' @export
 PercentageStat <- function(cellmeta, by, fill) {
   # Check if cellmeta is a data.frame or tibble

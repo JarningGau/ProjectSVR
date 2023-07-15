@@ -17,3 +17,4 @@ A subsetted CellProject object
 \description{
 Subset CellProject Object
 }
+\concept{object}

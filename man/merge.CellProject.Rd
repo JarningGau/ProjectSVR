@@ -19,3 +19,4 @@ merged object
 \description{
 Merge CellProject Objects
 }
+\concept{object}

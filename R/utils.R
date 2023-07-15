@@ -35,25 +35,25 @@ mcFindAllMarkers <- function(seu, do.flatten=TRUE, only.pos=TRUE, n.cores=10, ..
   return(marker_results)
 }
 
-#' save models
-#' @param model.list a list of models returned from FitEnsemblSVM() or FitEnsemblMultiClassif().
-#' @param gene.sets a list stores gene sets for calculating gene-set score matrix.
-#' @param bg.genes a vector stores bg genes for calculating gene-set score matrix.
-#' @param ref.cellmeta a data.frame stores cell types or other labels of reference atlas.
-#' @return a model class
-#' @export
-CreateModelObject <- function(model.list, gene.sets, bg.genes, ref.cellmeta){
-  svr.obj <- list(
-    "models" = model.list,
-    "genes" = list(
-      "gene.sets" = gene.sets, # list
-      "bg.genes" = bg.genes # vector
-    ),
-    "ref.cellmeta" = ref.cellmeta # data.frame
-  )
-  class(svr.obj) <- "SVR"
-  return(svr.obj)
-}
+# #' save models
+# #' @param model.list a list of models returned from FitEnsemblSVM() or FitEnsemblMultiClassif().
+# #' @param gene.sets a list stores gene sets for calculating gene-set score matrix.
+# #' @param bg.genes a vector stores bg genes for calculating gene-set score matrix.
+# #' @param ref.cellmeta a data.frame stores cell types or other labels of reference atlas.
+# #' @return a model class
+# #' @export
+# CreateModelObject <- function(model.list, gene.sets, bg.genes, ref.cellmeta){
+#   svr.obj <- list(
+#     "models" = model.list,
+#     "genes" = list(
+#       "gene.sets" = gene.sets, # list
+#       "bg.genes" = bg.genes # vector
+#     ),
+#     "ref.cellmeta" = ref.cellmeta # data.frame
+#   )
+#   class(svr.obj) <- "SVR"
+#   return(svr.obj)
+# }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #### Internal ####
@@ -65,6 +65,7 @@ CreateModelObject <- function(model.list, gene.sets, bg.genes, ref.cellmeta){
 #' @param query Data to query against data
 #' @param k Number of nearest neighbors to compute
 #' @param ... other parameters pass to \code{sklearn.neighbors.NearestNeighbors()}.
+#' @concept internal
 #'
 sknn <- function(data, query=data, k=5L, ...) {
   args <- list(...)
@@ -97,7 +98,7 @@ sknn <- function(data, query=data, k=5L, ...) {
 #' @param k Number of nearest neighbors to compute
 #' @param method "rann", "sklearn"
 #' @param ... Other args pass \code{nn2()} or \code{sknn()}.
-#'
+#' @concept internal
 #' @importFrom RANN nn2
 NNHelper <- function(data, query = data, k, method, ...) {
   args <- as.list(x = sys.frame(which = sys.nframe()))
@@ -128,12 +129,11 @@ NNHelper <- function(data, query = data, k, method, ...) {
 }
 
 
-#' Query the nearest cells for each query cell
-#'
-#' @param object Neighbor object.
-#'
-#' @return The k nearest cell names for each query cell.
-#'
+# Query the nearest cells for each query cell
+#
+# @param object Neighbor object.
+#
+# @return The k nearest cell names for each query cell.
 cells.Neighbor <- function(object) {
   ref.cell.names <- object$ref.cell.names
   nn.idx <- object$nn.idx # (n, k) (cells, knn)

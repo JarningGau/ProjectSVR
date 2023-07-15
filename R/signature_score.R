@@ -21,6 +21,7 @@ ComputeModuleScore <- function(x, ...) UseMethod('ComputeModuleScore')
 #' @param cores number of threads for parallel computing. Default: 1
 #'
 #' @rdname ComputeModuleScore
+#' @concept compute_module_score
 #' @export
 ComputeModuleScore.default <- function(x, gene.sets, min.size=20, batch.size=500, cores=1, ...) {
   if (!is.list(gene.sets)) {
@@ -43,6 +44,7 @@ ComputeModuleScore.default <- function(x, gene.sets, min.size=20, batch.size=500
 
 #' @rdname ComputeModuleScore
 #' @param assay Name of the seurat object assay.
+#' @concept compute_module_score
 #' @export
 ComputeModuleScore.Seurat <- function(x, gene.sets, min.size=20, batch.size=500, cores=1, assay = Seurat::DefaultAssay(x), ...) {
   dge <- x[[assay]]@counts

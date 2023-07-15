@@ -13,6 +13,7 @@
 #' @name CellProject-class
 #' @rdname CellProject-class
 #' @aliases CellProject-class
+#' @concept class
 #' @exportClass CellProject
 setClass(
   Class = "CellProject",
@@ -31,6 +32,7 @@ setClass(
 #' @param data matrix containing source data for cell projection
 #' @param cellmeta data frame containing cell meta data generated during cell projection
 #' @return a new CellProject object
+#' @concept object
 newCellProject <- function(embeddings, data, cellmeta = NULL){
   if (missing(embeddings) || missing(data)) {
     stop("Must provide 'embeddings' and 'data'")
@@ -82,7 +84,7 @@ newCellProject <- function(embeddings, data, cellmeta = NULL){
 #' @param ... arguments to be passed to or from methods.
 #' @return merged object
 #' @method merge CellProject
-#'
+#' @concept object
 #' @export
 merge.CellProject <- function(x, y, ...) {
   embeddings <- rbind(x@embeddings, y@embeddings)
@@ -113,6 +115,7 @@ merge.CellProject <- function(x, y, ...) {
 #' @param cells cells for subsetting
 #'
 #' @return A subsetted CellProject object
+#' @concept object
 #'
 subset2 <- function(x, cells) {
   if (missing(x) || missing(cells)) {
@@ -135,7 +138,7 @@ subset2 <- function(x, cells) {
 #' @param split.by Attribute for splitting
 #'
 #' @return A list of CellProject object
-#'
+#' @concept object
 #' @export
 SplitCellProject <- function(x, split.by) {
   if (missing(x) || missing(split.by)) {

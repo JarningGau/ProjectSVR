@@ -23,3 +23,4 @@ a new assay named 'UCell'.
 \description{
 A wrapper for mapping query data onto reference.
 }
+\concept{reference_mapping}

@@ -19,3 +19,4 @@ a new CellProject object
 \description{
 Creates a new CellProject object.
 }
+\concept{object}

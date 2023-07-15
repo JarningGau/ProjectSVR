@@ -63,50 +63,86 @@
     </div>
 
     <table class="ref-index"><colgroup><col class="alias"><col class="title"></colgroup><tbody><tr><th colspan="2">
-          <h2 id="all-functions">All functions <a href="#all-functions" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p>
+          <h2 id="class">Class <a href="#class" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Class defined in ProjectSVR</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="AbundanceTest.html">AbundanceTest()</a></code> </p>
-        </td>
-        <td><p>Differential Cellular Abundance Test</p></td>
-      </tr><tr><td>
-          <p><code><a href="AddProjQual.html">AddProjQual()</a></code> </p>
-        </td>
-        <td><p>Add projection quality scores for the query cells.</p></td>
-      </tr><tr><td>
-          <p><code><a href="AlluviaPlot.html">AlluviaPlot()</a></code> </p>
-        </td>
-        <td><p>Plot Alluvial Plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="BoxPlot.html">BoxPlot()</a></code> </p>
-        </td>
-        <td><p>BoxPlot</p></td>
-      </tr><tr><td>
           <p><code><a href="CellProject-class.html">CellProject-class</a></code> </p>
         </td>
         <td><p>The CellProject class</p></td>
       </tr><tr><td>
-          <p><code><a href="ComputeModuleScore.html">ComputeModuleScore()</a></code> </p>
+          <p><code><a href="GridDensity-class.html">GridDensity-class</a></code> <code><a href="GridDensity-class.html">GridDensity</a></code> </p>
         </td>
-        <td><p>Calculate gene module scores</p></td>
-      </tr><tr><td>
-          <p><code><a href="CreateModelObject.html">CreateModelObject()</a></code> </p>
+        <td><p>The GridDensity class</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="object-interaction">Object interaction <a href="#object-interaction" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for interacting with objects in ProjectSVR</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="SplitCellProject.html">SplitCellProject()</a></code> </p>
         </td>
-        <td><p>save models</p></td>
+        <td><p>Split CellProject Object</p></td>
       </tr><tr><td>
-          <p><code><a href="DimTheme.html">DimTheme()</a></code> </p>
+          <p><code><a href="merge.CellProject.html">merge(<i>&lt;CellProject&gt;</i>)</a></code> </p>
         </td>
-        <td><p>theme for DimPlot</p></td>
+        <td><p>Merge CellProject Objects</p></td>
       </tr><tr><td>
+          <p><code><a href="newCellProject.html">newCellProject()</a></code> </p>
+        </td>
+        <td><p>Creates a new CellProject object.</p></td>
+      </tr><tr><td>
+          <p><code><a href="subset2.html">subset2()</a></code> </p>
+        </td>
+        <td><p>Subset CellProject Object</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="meta-cell">Meta cell <a href="#meta-cell" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for making meta cells</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="EstimateKnnDensity.html">EstimateKnnDensity()</a></code> </p>
         </td>
         <td><p>Estimate KNN density on 2d embedding.</p></td>
       </tr><tr><td>
+          <p><code><a href="MergeCells.html">MergeCells()</a></code> </p>
+        </td>
+        <td><p>Merge cells around mesh points in each bin into pseudo-bulk gene expression matrix.</p></td>
+      </tr><tr><td>
+          <p><code><a href="plot.GridDensity.html">plot(<i>&lt;GridDensity&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Grid density plot</p></td>
+      </tr><tr><td>
+          <p><code><a href="subset.GridDensity.html">subset(<i>&lt;GridDensity&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>subset a GridDensity object.</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="feature-selection">Feature selection <a href="#feature-selection" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for extract signature gene sets</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="FindOptimalK.html">FindOptimalK()</a></code> </p>
         </td>
         <td><p>Find optimal components or topics for cNMF</p></td>
       </tr><tr><td>
+          <p><code><a href="RunCNMF.html">RunCNMF()</a></code> </p>
+        </td>
+        <td><p>Run consensus NMF</p></td>
+      </tr><tr><td>
+          <p><code><a href="mcFindAllMarkers.html">mcFindAllMarkers()</a></code> </p>
+        </td>
+        <td><p>multi-core FindAllMarkers()</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="gene-module-score">Gene module score <a href="#gene-module-score" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for computing gene module score</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="ComputeModuleScore.html">ComputeModuleScore()</a></code> </p>
+        </td>
+        <td><p>Calculate gene module scores</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="reference-model-construction">Reference model construction <a href="#reference-model-construction" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for training reference model</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="FitEnsemblMultiClassif.html">FitEnsemblMultiClassif()</a></code> </p>
         </td>
         <td><p>Training an ensemble classifier for cell type prediction.</p></td>
@@ -114,15 +150,31 @@
           <p><code><a href="FitEnsembleSVM.html">FitEnsembleSVM()</a></code> </p>
         </td>
         <td><p>Training an ensemble SVM model for embedding coordinates regression.</p></td>
-      </tr><tr><td>
-          <p><code><a href="GridDensity-class.html">GridDensity-class</a></code> <code><a href="GridDensity-class.html">GridDensity</a></code> </p>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="reference-mapping">Reference mapping <a href="#reference-mapping" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for reference mapping</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="AddProjQual.html">AddProjQual()</a></code> </p>
         </td>
-        <td><p>The GridDensity class</p></td>
+        <td><p>Add projection quality scores for the query cells.</p></td>
       </tr><tr><td>
-          <p><code><a href="GroupPreferencePlot.html">GroupPreferencePlot()</a></code> </p>
+          <p><code><a href="MapQuery.html">MapQuery()</a></code> </p>
         </td>
-        <td><p>Create Group Preference Plot</p></td>
+        <td><p>A wrapper for mapping query data onto reference.</p></td>
       </tr><tr><td>
+          <p><code><a href="ProjectNewdata.html">ProjectNewdata()</a></code> </p>
+        </td>
+        <td><p>Predicting the embedding coordinates via the trained SVM model.</p></td>
+      </tr><tr><td>
+          <p><code><a href="RefineProjection.html">RefineProjection()</a></code> </p>
+        </td>
+        <td><p>Refine low confidence mapping coords.</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="label-transfer">Label transfer <a href="#label-transfer" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for label transfer</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="KnnLabelTransfer.html">KnnLabelTransfer()</a></code> </p>
         </td>
         <td><p>Label transfer via KNN</p></td>
@@ -135,85 +187,69 @@
         </td>
         <td><p>Majority voting to harmonise cell labels on given over clusters</p></td>
       </tr><tr><td>
-          <p><code><a href="MapQuery.html">MapQuery()</a></code> </p>
+          <p><code><a href="PredictNewdata.html">PredictNewdata()</a></code> </p>
         </td>
-        <td><p>A wrapper for mapping query data onto reference.</p></td>
-      </tr><tr><td>
-          <p><code><a href="MergeCells.html">MergeCells()</a></code> </p>
+        <td><p>Predict cell types</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="differential-cell-population">Differential cell population <a href="#differential-cell-population" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for testing differential cell population</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="AbundanceTest.html">AbundanceTest()</a></code> </p>
         </td>
-        <td><p>Merge cells around mesh points in each bin into pseudo-bulk gene expression matrix.</p></td>
-      </tr><tr><td>
-          <p><code><a href="NNHelper.html">NNHelper()</a></code> </p>
-        </td>
-        <td><p>Internal helper function to dispatch to various neighbor finding methods</p></td>
+        <td><p>Differential Cellular Abundance Test</p></td>
       </tr><tr><td>
           <p><code><a href="PercentageStat.html">PercentageStat()</a></code> </p>
         </td>
         <td><p>Calculate cell population percentage</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="visualization">Visualization <a href="#visualization" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for nice plots</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="AlluviaPlot.html">AlluviaPlot()</a></code> </p>
+        </td>
+        <td><p>Plot Alluvial Plot</p></td>
+      </tr><tr><td>
+          <p><code><a href="BoxPlot.html">BoxPlot()</a></code> </p>
+        </td>
+        <td><p>BoxPlot</p></td>
+      </tr><tr><td>
+          <p><code><a href="DimTheme.html">DimTheme()</a></code> </p>
+        </td>
+        <td><p>theme for DimPlot</p></td>
+      </tr><tr><td>
+          <p><code><a href="GroupPreferencePlot.html">GroupPreferencePlot()</a></code> </p>
+        </td>
+        <td><p>Create Group Preference Plot</p></td>
       </tr><tr><td>
           <p><code><a href="PlotProjection.html">PlotProjection()</a></code> </p>
         </td>
         <td><p>Visualizing the projected query cells on reference via a density plot.</p></td>
       </tr><tr><td>
-          <p><code><a href="PredictNewdata.html">PredictNewdata()</a></code> </p>
-        </td>
-        <td><p>Predict cell types</p></td>
-      </tr><tr><td>
-          <p><code><a href="ProjectNewdata.html">ProjectNewdata()</a></code> </p>
-        </td>
-        <td><p>Predicting the embedding coordinates via the trained SVM model.</p></td>
-      </tr><tr><td>
-          <p><code><a href="RefineProjection.html">RefineProjection()</a></code> </p>
-        </td>
-        <td><p>Refine low confidence mapping coords.</p></td>
-      </tr><tr><td>
-          <p><code><a href="RunCNMF.html">RunCNMF()</a></code> </p>
-        </td>
-        <td><p>Run consensus NMF</p></td>
-      </tr><tr><td>
-          <p><code><a href="SplitCellProject.html">SplitCellProject()</a></code> </p>
-        </td>
-        <td><p>Split CellProject Object</p></td>
-      </tr><tr><td>
           <p><code><a href="VolcanoPlot.html">VolcanoPlot()</a></code> </p>
         </td>
         <td><p>Plot the Volcano Plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="cells.Neighbor.html">cells.Neighbor()</a></code> </p>
-        </td>
-        <td><p>Query the nearest cells for each query cell</p></td>
-      </tr><tr><td>
-          <p><code><a href="mcFindAllMarkers.html">mcFindAllMarkers()</a></code> </p>
-        </td>
-        <td><p>multi-core FindAllMarkers()</p></td>
-      </tr><tr><td>
-          <p><code><a href="merge.CellProject.html">merge(<i>&lt;CellProject&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>Merge CellProject Objects</p></td>
-      </tr><tr><td>
-          <p><code><a href="newCellProject.html">newCellProject()</a></code> </p>
-        </td>
-        <td><p>Creates a new CellProject object.</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot.GridDensity.html">plot(<i>&lt;GridDensity&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>Grid density plot</p></td>
-      </tr><tr><td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="data">Data <a href="#data" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Descriptions of data included with ProjectSVR</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="ribo.genes.html">ribo.genes</a></code> </p>
         </td>
         <td><p>A data set containing all human ribosomal genes</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="internal">Internal <a href="#internal" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Internal functions</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="NNHelper.html">NNHelper()</a></code> </p>
+        </td>
+        <td><p>Internal helper function to dispatch to various neighbor finding methods</p></td>
       </tr><tr><td>
           <p><code><a href="sknn.html">sknn()</a></code> </p>
         </td>
         <td><p>Run sklearn.neighbors.NearestNeighbors</p></td>
-      </tr><tr><td>
-          <p><code><a href="subset.GridDensity.html">subset(<i>&lt;GridDensity&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>subset a GridDensity object.</p></td>
-      </tr><tr><td>
-          <p><code><a href="subset2.html">subset2()</a></code> </p>
-        </td>
-        <td><p>Subset CellProject Object</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

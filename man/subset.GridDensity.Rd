@@ -31,3 +31,4 @@ Default: max number of mesh points per bin minus 1.}
 \description{
 subset a GridDensity object.
 }
+\concept{meta_cell}

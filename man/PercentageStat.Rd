@@ -23,3 +23,4 @@ This function calculates percentage statistics based on a given dataset and grou
 PercentageStat(mtcars, "cyl", "gear")
 
 }
+\concept{differential_population}

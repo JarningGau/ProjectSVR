@@ -14,3 +14,4 @@
 \description{
 Grid density plot
 }
+\concept{meta_cell}

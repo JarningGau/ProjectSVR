@@ -3,6 +3,7 @@ NULL
 
 #' theme for DimPlot
 #' @export
+#' @concept plot
 DimTheme <- function() {
   theme_bw(base_size = 15) %+replace%
     theme(legend.title = element_blank(),
