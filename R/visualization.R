@@ -22,6 +22,7 @@ NULL
 #' @param legend.ncol Number of columns for legend. Default: 1
 #'
 #' @return A ggplot object.
+#' @concept plot
 #' @export
 #'
 PlotProjection <- function(seu.q, reference, ref.color.by,
@@ -160,6 +161,7 @@ PercentageStat <- function(cellmeta, by, fill) {
 #' AlluviaPlot(mtcars, "cyl", "gear")
 #'
 #' @export
+#' @concept plot
 #' @references https://stackoverflow.com/questions/73372641/shaded-area-between-bars-using-ggplot2
 AlluviaPlot <- function(cellmeta, by, fill, colors = NULL, bar.width = 0.5, legend.ncol = 1) {
   pop.stat <- PercentageStat(cellmeta, by, fill)
@@ -219,7 +221,7 @@ AlluviaPlot <- function(cellmeta, by, fill, colors = NULL, bar.width = 0.5, lege
 #' mtcars$cyl <- factor(mtcars$cyl)
 #' mtcars$carb <- factor(mtcars$carb)
 #' GroupPreferencePlot(mtcars, "cyl", "carb")
-#'
+#' @concept plot
 #' @export
 GroupPreferencePlot <- function(cellmeta, group.by, preference.on, palette = "Blues", column_names_rot = 0, ...) {
   # Check if cellmeta is a data frame
@@ -308,7 +310,7 @@ GroupPreferencePlot <- function(cellmeta, group.by, preference.on, palette = "Bl
 #' @importFrom stats wilcox.test
 #' @importFrom magrittr %>%
 #' @importFrom dplyr distinct
-#'
+#' @concept differential_population
 #' @export
 AbundanceTest <- function(cellmeta, celltype.col, sample.col, group.col) {
   stopifnot(is.data.frame(cellmeta),
@@ -379,7 +381,7 @@ AbundanceTest <- function(cellmeta, celltype.col, sample.col, group.col) {
 #'
 #' @import ggplot2
 #' @importFrom rlang .data
-#'
+#' @concept plot
 #' @export
 VolcanoPlot <- function(test.df, p.value.cutoff = 0.001, xlab = NULL, ylab = NULL, colors = NULL) {
   p <- ggplot(test.df, aes(log2(.data$fold.change), .data$mean.perc,
@@ -424,7 +426,7 @@ VolcanoPlot <- function(test.df, p.value.cutoff = 0.001, xlab = NULL, ylab = NUL
 #' @importFrom ggplot2 ggplot geom_boxplot geom_jitter facet_wrap labs theme_classic element_text element_blank
 #' @importFrom dplyr left_join distinct
 #' @importFrom rlang .data
-#'
+#' @concept plot
 #' @export
 BoxPlot <- function(cellmeta, sample.col, celltype.col, group.col,
                     legend.ncol = NULL, celltypes.show = NULL) {

@@ -16,4 +16,5 @@ ribo.genes
 \description{
 A data set containing all human ribosomal genes
 }
+\concept{data}
 \keyword{datasets}

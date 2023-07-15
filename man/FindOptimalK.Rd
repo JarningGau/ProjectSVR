@@ -51,3 +51,4 @@ available cores detected by `parallel::detectCores()`.}
 \description{
 Find optimal components or topics for cNMF
 }
+\concept{extract_signature}

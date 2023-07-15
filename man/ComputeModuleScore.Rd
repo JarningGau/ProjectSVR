@@ -48,3 +48,4 @@ A signature score matrix or Seurat object.
 \description{
 Calculate gene module scores
 }
+\concept{compute_module_score}

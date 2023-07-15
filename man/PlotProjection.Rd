@@ -53,3 +53,4 @@ A ggplot object.
 \description{
 Visualizing the projected query cells on reference via a density plot.
 }
+\concept{plot}

@@ -30,3 +30,4 @@ mean, median, or any self defined function given a vector and returns a value. D
 \description{
 Predicting the embedding coordinates via the trained SVM model.
 }
+\concept{reference_mapping}

@@ -38,3 +38,4 @@ a list of trained learners.
 \description{
 Training an ensemble SVM model for embedding coordinates regression.
 }
+\concept{training_model}

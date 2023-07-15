@@ -31,3 +31,4 @@ A ggplot object.
 Volcano plot for visualizing the cellular abundance difference. This function
 accepts the outputs of `AbundanceTest()`.
 }
+\concept{plot}

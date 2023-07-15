@@ -13,6 +13,7 @@ NULL
 #' @param ... Arguments passed to Seurat::FindMarkers()
 #' @return data.frame or list contains putative markers.
 #' @references https://gist.github.com/diazdc/1735102c243cd16acb1b1f3fd09a26e1
+#' @concept extract_signature
 #' @export
 mcFindAllMarkers <- function(seu, do.flatten=TRUE, only.pos=TRUE, n.cores=10, ...) {
   n_clust <- levels(Seurat::Idents(seu))

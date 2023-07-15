@@ -37,5 +37,5 @@ data(mtcars)
 mtcars$cyl <- factor(mtcars$cyl)
 mtcars$carb <- factor(mtcars$carb)
 GroupPreferencePlot(mtcars, "cyl", "carb")
-
 }
+\concept{plot}

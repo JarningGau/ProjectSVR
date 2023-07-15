@@ -30,3 +30,4 @@ A data.frame contains consensus predicted cell types.
 \description{
 Majority voting to harmonise cell labels on given over clusters
 }
+\concept{label_transfer}

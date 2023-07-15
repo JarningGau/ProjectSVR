@@ -26,6 +26,7 @@ NULL
 #' for each NMF replicate. Default: 1024
 #' @param cores specifies how many cores can be used in parallel. Default: all
 #' available cores detected by `parallel::detectCores()`.
+#' @concept extract_signature
 #' @export
 FindOptimalK <- function(counts.fn, components, tpm.fn=NULL, out.path=NULL, run.name=NULL,
                          n.iter=100, n.var.genes=2000, genes.fn=NULL, seed=1024, cores=-1) {
@@ -115,6 +116,7 @@ FindOptimalK <- function(counts.fn, components, tpm.fn=NULL, out.path=NULL, run.
 #' neighbors for local density filtering. E.g. if you run 100 replicates, and set
 #' this to 0.3, 30 nearest neighbors will be used for outlier detection. Default: 0.3
 #' @param show.clustering whether or not the clustergram image is output. Default: FALSE
+#' @concept extract_signature
 #' @export
 RunCNMF <- function(counts.fn, K, out.path=NULL, run.name=NULL, n.iter=100,
                     n.var.genes=2000, genes.fn=NULL, seed=1024, cores=-1, n.top.genes=100,

@@ -63,3 +63,4 @@ this to 0.3, 30 nearest neighbors will be used for outlier detection. Default: 0
 \description{
 Run consensus NMF
 }
+\concept{extract_signature}

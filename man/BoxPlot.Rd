@@ -32,3 +32,4 @@ A ggplot object.
 \description{
 Create a box plot with jittered data points and significance testing.
 }
+\concept{plot}

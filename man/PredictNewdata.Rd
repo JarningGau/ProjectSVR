@@ -21,3 +21,4 @@ A data.frame contains predicted results.
 \description{
 Predict cell types
 }
+\concept{label_transfer}

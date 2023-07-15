@@ -24,6 +24,7 @@ NULL
 #' @param balance.cell.type A boolen determines whether performing balance sampling. Default: True
 #' @param cores The number of CPU for training. Default: -1, use all available threads.
 #' @return a list of trained learners.
+#' @concept training_model
 #' @export
 FitEnsemblMultiClassif <- function(feature.mat, cell.types, do.norm = NULL, mlr3.model = "classif.svm", batch.size=5000,
                                    n.models=100, balance.cell.type = TRUE, cores=-1){
@@ -118,6 +119,7 @@ FitEnsemblMultiClassif <- function(feature.mat, cell.types, do.norm = NULL, mlr3
 #' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.
 #' @param cores number of threads for prediction, -1 means all available threads. Default: -1
 #' @return A data.frame contains predicted results.
+#' @concept label_transfer
 #' @export
 PredictNewdata <- function(feature.mat, model, do.norm=NULL, cores=-1){
   ## check parameters
@@ -195,6 +197,7 @@ OverCluster <- function(feature.mat, k){
 #' @param min.prop The minimum proportion of cells required to support naming of
 #' the subcluster by a cell type. Default: 0
 #' @return A data.frame contains consensus predicted cell types.
+#' @concept label_transfer
 #' @export
 MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k = 20, min.prop = 0){
   ## check parameters
@@ -257,6 +260,7 @@ MajorityVote <- function(feature.mat = NULL, over.clusters = NULL, cell.types, k
 #'
 #' @importFrom magrittr %>%
 #' @importFrom stats median
+#' @concept label_transfer
 #' @export
 #'
 KnnLabelTransfer <- function(query.emb, ref.emb, ref.labels, k=100) {

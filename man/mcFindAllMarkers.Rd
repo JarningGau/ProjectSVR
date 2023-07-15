@@ -26,3 +26,4 @@ multi-core FindAllMarkers()
 \references{
 https://gist.github.com/diazdc/1735102c243cd16acb1b1f3fd09a26e1
 }
+\concept{extract_signature}

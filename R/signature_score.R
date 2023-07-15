@@ -10,7 +10,7 @@ NULL
 #' @param x gene expression matrix, rows are genes, columns are cells. Can be any format, UMI, CPM, TPM, etc.
 #' @param ... Arguments passed to other methods.
 #' @return A signature score matrix or Seurat object.
-#'
+#' @concept compute_module_score
 #' @export
 ComputeModuleScore <- function(x, ...) UseMethod('ComputeModuleScore')
 

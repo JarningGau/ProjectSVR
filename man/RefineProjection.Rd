@@ -23,3 +23,4 @@ A \code{CellProject} object
 \description{
 Refine low confidence mapping coords.
 }
+\concept{reference_mapping}

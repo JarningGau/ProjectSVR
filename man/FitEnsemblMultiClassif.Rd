@@ -38,3 +38,4 @@ a list of trained learners.
 \description{
 Training an ensemble classifier for cell type prediction.
 }
+\concept{training_model}

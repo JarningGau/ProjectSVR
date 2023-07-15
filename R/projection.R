@@ -22,6 +22,7 @@ NULL
 #' @param balance.cell.type A boolen determines whether performing balance sampling. Default: FALSE
 #' @param cores The number of CPU for training. Default: -1, use all available threads.
 #' @return a list of trained learners.
+#' @concept training_model
 #' @export
 FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm=NULL, batch.size=5000, n.models=100, balance.cell.type=FALSE, cores=-1) {
   ## check parameters
@@ -121,6 +122,7 @@ FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm=NULL, 
 #' mean, median, or any self defined function given a vector and returns a value. Default: median.
 #' @param cores number of threads for prediction, -1 means all available threads. Default: -1
 #' @return \code{CellProject} object containing source data and predicted embedding matrix.
+#' @concept reference_mapping
 #' @export
 ProjectNewdata <- function(feature.mat, model, do.norm=NULL, int.fun=stats::median, cores=-1) {
   ## check parameters
@@ -187,6 +189,7 @@ ProjectNewdata <- function(feature.mat, model, do.norm=NULL, int.fun=stats::medi
 #' @param k K nearest neighbors used. Default: 20
 #' @param repeats The number of sample times for generate background projection qualities.
 #' @return A \code{CellProject} object
+#' @concept reference_mapping
 #' @references \url{https://www.nature.com/articles/s41467-021-25957-x}
 #' @export
 AddProjQual <- function(object, k=20, repeats=1e4) {
@@ -245,7 +248,7 @@ AddProjQual <- function(object, k=20, repeats=1e4) {
 #' above this cutoff. Default: 0.05
 #' @param k K nearest neighbors for interpolation. Default: 10
 #' @return A \code{CellProject} object
-#'
+#' @concept reference_mapping
 #' @export
 RefineProjection <- function(object, p.val.cutoff = 1, p.adj.cutoff = 0.05, k = 10){
   if (is.null(object@neighbors)) {

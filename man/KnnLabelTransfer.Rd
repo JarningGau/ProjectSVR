@@ -21,3 +21,4 @@ A data.frame contains prediction results.
 \description{
 Label transfer via KNN
 }
+\concept{label_transfer}

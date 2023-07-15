@@ -39,3 +39,4 @@ AlluviaPlot(mtcars, "cyl", "gear")
 \references{
 https://stackoverflow.com/questions/73372641/shaded-area-between-bars-using-ggplot2
 }
+\concept{plot}
