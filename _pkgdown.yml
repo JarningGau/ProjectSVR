@@ -3,5 +3,17 @@ url: jarninggau.github.io/ProjectSVR/
 destination: docs
 
 template:
-  bootstrap: 5
+  params:
+    bootswatch: flatly
+    ganalytics: G-W1XR84YEPZ
 
+navbar:
+  structure:
+    left: [home, tutorials, reference, news]
+    right: [github]
+  components:
+    tutorials:
+      text: Tutorials
+      menu:
+      - text: Quick start
+        href: articles/quick_start.html
