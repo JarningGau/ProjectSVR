@@ -2,7 +2,7 @@ Type: Package
 Package: ProjectSVR
 Title: Projecting Query scRNA-seq Data Onto A Reference Atlas Via Support
     Vector Regression
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     person("Jianing", "Gao", , "gjn1106@mail.ustc.edu.cn", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6599-2133"))
