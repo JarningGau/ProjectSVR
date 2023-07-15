@@ -4,16 +4,18 @@
 \alias{MapQuery}
 \title{A wrapper for mapping query data onto reference.}
 \usage{
-MapQuery(seu.q, reference, assay.q = "RNA", ncores = 1)
+MapQuery(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1)
 }
 \arguments{
 \item{seu.q}{A query Seurat object.}
 
 \item{reference}{Reference model.}
 
-\item{assay.q}{The assay used for reference mapping.}
+\item{assay.q}{The assay used for reference mapping. Default: RNA}
 
-\item{ncores}{Number of threads for calculation.}
+\item{add.map.qual}{Whether add mapping quality metric (mean kNN distance). Default: FALSE}
+
+\item{ncores}{Number of threads for calculation. Default: 1}
 }
 \value{
 A Seurat object. The projected reference embeddings were saved in a
@@ -23,4 +25,6 @@ a new assay named 'UCell'.
 \description{
 A wrapper for mapping query data onto reference.
 }
-\concept{reference_mapping}
+\concept{reference_mapping
+TODO:
+1. Add map quality metric;}
