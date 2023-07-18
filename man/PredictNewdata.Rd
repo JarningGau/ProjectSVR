@@ -4,14 +4,14 @@
 \alias{PredictNewdata}
 \title{Predict cell types}
 \usage{
-PredictNewdata(feature.mat, model, do.norm = NULL, cores = -1)
+PredictNewdata(feature.mat, model, do.norm = "L2", cores = -1)
 }
 \arguments{
 \item{feature.mat}{A data.frame containing signature scores, rows are cells, columns are features.}
 
 \item{model}{The trained learners returned from `FitEnsemblMultiClassif()`.}
 
-\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.}
+\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'}
 
 \item{cores}{number of threads for prediction, -1 means all available threads. Default: -1}
 }

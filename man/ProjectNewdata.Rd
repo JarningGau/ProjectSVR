@@ -7,7 +7,7 @@
 ProjectNewdata(
   feature.mat,
   model,
-  do.norm = NULL,
+  do.norm = "L2",
   int.fun = stats::median,
   cores = -1
 )
@@ -17,7 +17,7 @@ ProjectNewdata(
 
 \item{model}{The trained learners returned from `FitEnsembleSVM()`.}
 
-\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.}
+\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'}
 
 \item{int.fun}{The function for integration of predicted embedding by different learners:
 mean, median, or any self defined function given a vector and returns a value. Default: median.}

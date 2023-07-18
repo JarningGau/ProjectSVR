@@ -8,7 +8,7 @@ FitEnsembleSVM(
   feature.mat,
   emb.mat,
   cell.types = NULL,
-  do.norm = NULL,
+  do.norm = "L2",
   batch.size = 5000,
   n.models = 100,
   balance.cell.type = FALSE,
@@ -22,7 +22,7 @@ FitEnsembleSVM(
 
 \item{cell.types}{A named vector recording cell types.}
 
-\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.}
+\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'}
 
 \item{batch.size}{The number of cells for each model. Default: 5000}
 

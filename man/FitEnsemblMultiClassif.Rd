@@ -7,7 +7,7 @@
 FitEnsemblMultiClassif(
   feature.mat,
   cell.types,
-  do.norm = NULL,
+  do.norm = "L2",
   mlr3.model = "classif.svm",
   batch.size = 5000,
   n.models = 100,
@@ -20,7 +20,7 @@ FitEnsemblMultiClassif(
 
 \item{cell.types}{A data.frame recording cell types at different granularity.}
 
-\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.}
+\item{do.norm}{Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'}
 
 \item{mlr3.model}{classif.svm, classif.xgboost, classif.randomForest.  Default: classif.svm}
 

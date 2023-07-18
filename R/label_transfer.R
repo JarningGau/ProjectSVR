@@ -17,7 +17,7 @@ NULL
 #' @importFrom mlr3 as_task_classif lrn
 #' @param feature.mat A signature score matrix, rows are cells, columns are features.
 #' @param cell.types A data.frame recording cell types at different granularity.
-#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.
+#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'
 #' @param mlr3.model classif.svm, classif.xgboost, classif.randomForest.  Default: classif.svm
 #' @param batch.size The number of cells for each model. Default: 5000
 #' @param n.models The number of SVM model. Default: 100
@@ -26,7 +26,7 @@ NULL
 #' @return a list of trained learners.
 #' @concept training_model
 #' @export
-FitEnsemblMultiClassif <- function(feature.mat, cell.types, do.norm = NULL, mlr3.model = "classif.svm", batch.size=5000,
+FitEnsemblMultiClassif <- function(feature.mat, cell.types, do.norm = 'L2', mlr3.model = "classif.svm", batch.size=5000,
                                    n.models=100, balance.cell.type = TRUE, cores=-1){
   ## check parameters
   if (!is.data.frame(feature.mat)) {
@@ -116,12 +116,12 @@ FitEnsemblMultiClassif <- function(feature.mat, cell.types, do.norm = NULL, mlr3
 #'
 #' @param feature.mat A data.frame containing signature scores, rows are cells, columns are features.
 #' @param model The trained learners returned from `FitEnsemblMultiClassif()`.
-#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.
+#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'
 #' @param cores number of threads for prediction, -1 means all available threads. Default: -1
 #' @return A data.frame contains predicted results.
 #' @concept label_transfer
 #' @export
-PredictNewdata <- function(feature.mat, model, do.norm=NULL, cores=-1){
+PredictNewdata <- function(feature.mat, model, do.norm='L2', cores=-1){
   ## check parameters
   if (!is.data.frame(feature.mat)) {
     warning("The 'feature.mat' should be a data.frame, enforce convert to data.frame.")

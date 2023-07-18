@@ -16,7 +16,7 @@ NULL
 #' @param feature.mat A signature score matrix, rows are cells, columns are features.
 #' @param emb.mat The embedding matrix, rows are cells, columns are dimensions.
 #' @param cell.types A named vector recording cell types.
-#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.
+#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'
 #' @param batch.size The number of cells for each model. Default: 5000
 #' @param n.models The number of SVM model. Default: 100
 #' @param balance.cell.type A boolen determines whether performing balance sampling. Default: FALSE
@@ -24,7 +24,7 @@ NULL
 #' @return a list of trained learners.
 #' @concept training_model
 #' @export
-FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm=NULL, batch.size=5000, n.models=100, balance.cell.type=FALSE, cores=-1) {
+FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm='L2', batch.size=5000, n.models=100, balance.cell.type=FALSE, cores=-1) {
   ## check parameters
   if (!is.data.frame(feature.mat)) {
     warning("The 'feature.mat' should be a data.frame, enforce convert to data.frame.")
@@ -117,14 +117,14 @@ FitEnsembleSVM <- function(feature.mat, emb.mat, cell.types=NULL, do.norm=NULL, 
 #'
 #' @param feature.mat A data.frame containing signature scores, rows are cells, columns are features.
 #' @param model The trained learners returned from `FitEnsembleSVM()`.
-#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.
+#' @param do.norm Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'
 #' @param int.fun The function for integration of predicted embedding by different learners:
 #' mean, median, or any self defined function given a vector and returns a value. Default: median.
 #' @param cores number of threads for prediction, -1 means all available threads. Default: -1
 #' @return \code{CellProject} object containing source data and predicted embedding matrix.
 #' @concept reference_mapping
 #' @export
-ProjectNewdata <- function(feature.mat, model, do.norm=NULL, int.fun=stats::median, cores=-1) {
+ProjectNewdata <- function(feature.mat, model, do.norm='L2', int.fun=stats::median, cores=-1) {
   ## check parameters
   if (!is.data.frame(feature.mat)) {
     warning("The 'feature.mat' should be a data.frame, enforce convert to data.frame.")
