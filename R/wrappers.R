@@ -6,18 +6,18 @@ NULL
 #'
 #' @param seu.q A query Seurat object.
 #' @param reference Reference model.
+#' @param gss.method Method for calculation of gene set score. 'AUCell' or 'UCell'
+#' are supported. Defalut: UCell
 #' @param assay.q The assay used for reference mapping. Default: RNA
 #' @param add.map.qual Whether add mapping quality metric (mean kNN distance). Default: FALSE
 #' @param ncores Number of threads for calculation. Default: 1
 #' @return A Seurat object. The projected reference embeddings were saved in a
 #' dimension reduction object named 'ref.umap'. The gene set score were saved in
-#' a new assay named 'UCell'.
+#' a new assay named 'SignatureScore'.
 #' @concept reference_mapping
-#' TODO:
-#' 1. Add map quality metric;
 #' @export
 #'
-MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1) {
+MapQuery <- function(seu.q, reference, gss.method = "UCell", assay.q = "RNA", add.map.qual = FALSE, ncores = 1) {
   ## check parameters
   if (!inherits(seu.q, "Seurat")) stop("seu.q argument must be a Seurat object")
   if (!is.list(reference) || !all(c("genes", "models") %in% names(reference))) {
@@ -37,29 +37,14 @@ MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, nc
 
   message("#### Compute Gene Set Score Matrix ####")
   bg.genes <- reference$genes$bg.genes
-  genes.use <- intersect(rownames(seu.q), bg.genes)
-  matched.ratio <- length(genes.use) / length(bg.genes)
-  matched.ratio <- round(matched.ratio, 4)*100
-  if (matched.ratio < 50) {
-    stop(sprintf("Too less background genes (%s%%) were matched between query and reference. Please check the gene names in 'seu.q'", matched.ratio))
-  }
-  if (matched.ratio < 70) {
-    warning(sprintf("Only %s%% background genes were matched between query and reference", matched.ratio))
-  } else {
-    message(sprintf("%s%% background genes were matched between query and reference", matched.ratio))
-  }
-  counts <- seu.q[[assay.q]]@counts[genes.use, ]
-  if (!rlang::is_installed("UCell")) {
-    stop("Please install UCell package (https://github.com/carmonalab/UCell).")
-  }
-  gss.mat <- UCell::ScoreSignatures_UCell(counts, features = gene.sets, ncores = ncores)
-  # colnames(gss.mat) <- paste0(names(gene.sets), "_UCell")
+  seu.q <- ComputeModuleScore(seu.q, gene.sets, bg.genes, method = gss.method, cores = ncores)
+  Seurat::DefaultAssay(seu.q) <- "SignatureScore"
+  gss.mat <- Seurat::FetchData(seu.q, vars = rownames(seu.q))
 
   message("#### Map Query to Reference ####")
-  proj.obj <- ProjectNewdata(feature.mat = as.data.frame(gss.mat),
+  proj.obj <- ProjectNewdata(feature.mat = gss.mat,
                              model = reference$models$umap,
                              do.norm = "L2", cores = ncores)
-  seu.q[["UCell"]] <- Seurat::CreateAssayObject(data = t(gss.mat))
   seu.q[["ref.umap"]] <- Seurat::CreateDimReducObject(proj.obj@embeddings, key = "refUMAP_", assay = assay.q)
   if (add.map.qual) {
     message("#### Map Quality ####")

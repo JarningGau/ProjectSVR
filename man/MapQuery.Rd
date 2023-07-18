@@ -4,12 +4,22 @@
 \alias{MapQuery}
 \title{A wrapper for mapping query data onto reference.}
 \usage{
-MapQuery(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1)
+MapQuery(
+  seu.q,
+  reference,
+  gss.method = "UCell",
+  assay.q = "RNA",
+  add.map.qual = FALSE,
+  ncores = 1
+)
 }
 \arguments{
 \item{seu.q}{A query Seurat object.}
 
 \item{reference}{Reference model.}
+
+\item{gss.method}{Method for calculation of gene set score. 'AUCell' or 'UCell'
+are supported. Defalut: UCell}
 
 \item{assay.q}{The assay used for reference mapping. Default: RNA}
 
@@ -20,11 +30,9 @@ MapQuery(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1)
 \value{
 A Seurat object. The projected reference embeddings were saved in a
 dimension reduction object named 'ref.umap'. The gene set score were saved in
-a new assay named 'UCell'.
+a new assay named 'SignatureScore'.
 }
 \description{
 A wrapper for mapping query data onto reference.
 }
-\concept{reference_mapping
-TODO:
-1. Add map quality metric;}
+\concept{reference_mapping}

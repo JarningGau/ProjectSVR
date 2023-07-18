@@ -11,6 +11,8 @@ ComputeModuleScore(x, ...)
 \method{ComputeModuleScore}{default}(
   x,
   gene.sets,
+  bg.genes = NULL,
+  method = "UCell",
   min.size = 20,
   batch.size = 500,
   cores = 1,
@@ -20,6 +22,8 @@ ComputeModuleScore(x, ...)
 \method{ComputeModuleScore}{Seurat}(
   x,
   gene.sets,
+  bg.genes = NULL,
+  method = "UCell",
   min.size = 20,
   batch.size = 500,
   cores = 1,
@@ -28,15 +32,25 @@ ComputeModuleScore(x, ...)
 )
 }
 \arguments{
-\item{x}{gene expression matrix, rows are genes, columns are cells. Can be any format, UMI, CPM, TPM, etc.}
+\item{x}{gene expression matrix, rows are genes, columns are cells. Can be any
+format, UMI, CPM, TPM, etc.}
 
 \item{...}{Arguments passed to other methods.}
 
 \item{gene.sets}{a list of gene sets in data.frame or named list.}
 
-\item{min.size}{The minimal genes of the gene sets. The size of gene sets less than this value were ignored.  Default: 20}
+\item{bg.genes}{background genes for calculating signature score, NULL means use
+all genes. Default: NULL}
 
-\item{batch.size}{The number of cells were calculated for each batch. Default: 500}
+\item{method}{method for calculating signature score, support "AUCell" or "UCell".
+Default: UCell}
+
+\item{min.size}{The minimal genes of the gene sets. The size of gene sets less
+than this value were ignored.  Default: 20}
+
+\item{batch.size}{The number of cells were calculated for each batch.
+This parameter is for the parallel calculation in adopted in 'AUCell' method.
+Default: 500}
 
 \item{cores}{number of threads for parallel computing. Default: 1}
 
