@@ -163,7 +163,7 @@ The metric for evaluating the mapping quality is essential for users to identify
 
 We believe that a good projection means the local topological relationship should be kept after projection. Thus we build a nearest neighbor (NN) graph in feature space (signature score matrix) and measure the average distance of its K nearest neighbors (called `mean.knn.dist`). A smaller `mean.knn.dist` means a good projection.
 
-![](../man/figures/mean-knn-dist.png)
+![](reference/figures/mean-knn-dist.png)
 
 To access the p-value of a given `mean.knn.dist`, we build the null distribution by calculating the randomly selected K nearest neighbors for the given cell and repeat the process by 1000 times. Then the empirical p values were calculated according to this null distribution. Adjusted p values were calculated by Benjamini-Hochberg Procedure.
 
@@ -200,7 +200,7 @@ p2 <- ggplot(data.plot, aes(mean.knn.dist)) +
 
 p3 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) + 
   geom_point(aes(color = mean.knn.dist > cut.off, size = mean.knn.dist > cut.off)) + 
-  ggtitle(sprintf("Low-quality projection (%s%%)", low.qual.prop)) + 
+  ggtitle(sprintf("Low-quality projection\n(%s%%)", low.qual.prop)) + 
   scale_color_manual(values = c("grey", "red")) + 
   scale_size_manual(values = c(0.1, 0.5), guide = "none") + 
   guides(color = guide_legend(title = sprintf("mean.knn.dist\n(>%s)", cut.off))) + 
