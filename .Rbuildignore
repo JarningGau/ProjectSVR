@@ -11,7 +11,11 @@
 ^ProjectSVR-logo\.png$
 ^CODE_OF_CONDUCT\.md$
 ^\.github$
-^\.scripts$
+^scripts$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^R/*.old$
+^vignettes/*.rds$
+^vignettes/*.R$
+^vignettes/*.html$

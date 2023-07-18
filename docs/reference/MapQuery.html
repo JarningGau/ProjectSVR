@@ -69,7 +69,14 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">MapQuery</span><span class="op">(</span><span class="va">seu.q</span>, <span class="va">reference</span>, assay.q <span class="op">=</span> <span class="st">"RNA"</span>, ncores <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">MapQuery</span><span class="op">(</span></span>
+<span>  <span class="va">seu.q</span>,</span>
+<span>  <span class="va">reference</span>,</span>
+<span>  gss.method <span class="op">=</span> <span class="st">"UCell"</span>,</span>
+<span>  assay.q <span class="op">=</span> <span class="st">"RNA"</span>,</span>
+<span>  add.map.qual <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  ncores <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -82,12 +89,21 @@
 <dd><p>Reference model.</p></dd>
 
 
+<dt>gss.method</dt>
+<dd><p>Method for calculation of gene set score. 'AUCell' or 'UCell'
+are supported. Defalut: UCell</p></dd>
+
+
 <dt>assay.q</dt>
-<dd><p>The assay used for reference mapping.</p></dd>
+<dd><p>The assay used for reference mapping. Default: RNA</p></dd>
+
+
+<dt>add.map.qual</dt>
+<dd><p>Whether add mapping quality metric (mean kNN distance). Default: FALSE</p></dd>
 
 
 <dt>ncores</dt>
-<dd><p>Number of threads for calculation.</p></dd>
+<dd><p>Number of threads for calculation. Default: 1</p></dd>
 
 </dl></div>
     <div id="value">
@@ -96,7 +112,7 @@
 
 <p>A Seurat object. The projected reference embeddings were saved in a
 dimension reduction object named 'ref.umap'. The gene set score were saved in
-a new assay named 'UCell'.</p>
+a new assay named 'SignatureScore'.</p>
     </div>
 
   </div>

@@ -75,6 +75,8 @@
 <span><span class="fu">ComputeModuleScore</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">gene.sets</span>,</span>
+<span>  bg.genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"UCell"</span>,</span>
 <span>  min.size <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  batch.size <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -85,6 +87,8 @@
 <span><span class="fu">ComputeModuleScore</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">gene.sets</span>,</span>
+<span>  bg.genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"UCell"</span>,</span>
 <span>  min.size <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  batch.size <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -96,7 +100,8 @@
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
-<dd><p>gene expression matrix, rows are genes, columns are cells. Can be any format, UMI, CPM, TPM, etc.</p></dd>
+<dd><p>gene expression matrix, rows are genes, columns are cells. Can be any
+format, UMI, CPM, TPM, etc.</p></dd>
 
 
 <dt>...</dt>
@@ -107,12 +112,25 @@
 <dd><p>a list of gene sets in data.frame or named list.</p></dd>
 
 
+<dt>bg.genes</dt>
+<dd><p>background genes for calculating signature score, NULL means use
+all genes. Default: NULL</p></dd>
+
+
+<dt>method</dt>
+<dd><p>method for calculating signature score, support "AUCell" or "UCell".
+Default: UCell</p></dd>
+
+
 <dt>min.size</dt>
-<dd><p>The minimal genes of the gene sets. The size of gene sets less than this value were ignored.  Default: 20</p></dd>
+<dd><p>The minimal genes of the gene sets. The size of gene sets less
+than this value were ignored.  Default: 20</p></dd>
 
 
 <dt>batch.size</dt>
-<dd><p>The number of cells were calculated for each batch. Default: 500</p></dd>
+<dd><p>The number of cells were calculated for each batch.
+This parameter is for the parallel calculation in adopted in 'AUCell' method.
+Default: 500</p></dd>
 
 
 <dt>cores</dt>

@@ -72,7 +72,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">FitEnsemblMultiClassif</span><span class="op">(</span></span>
 <span>  <span class="va">feature.mat</span>,</span>
 <span>  <span class="va">cell.types</span>,</span>
-<span>  do.norm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  do.norm <span class="op">=</span> <span class="st">"L2"</span>,</span>
 <span>  mlr3.model <span class="op">=</span> <span class="st">"classif.svm"</span>,</span>
 <span>  batch.size <span class="op">=</span> <span class="fl">5000</span>,</span>
 <span>  n.models <span class="op">=</span> <span class="fl">100</span>,</span>
@@ -92,7 +92,7 @@
 
 
 <dt>do.norm</dt>
-<dd><p>Whether normalize the feature matrix. L1, L2, NULL. Default: NULL.</p></dd>
+<dd><p>Whether normalize the feature matrix. L1, L2, NULL. Default: 'L2'</p></dd>
 
 
 <dt>mlr3.model</dt>
