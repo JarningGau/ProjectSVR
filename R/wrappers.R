@@ -50,6 +50,8 @@ MapQuery <- function(seu.q, reference, gss.method = "UCell", assay.q = "RNA", ad
     message("#### Map Quality ####")
     proj.obj <- AddProjQual(object = proj.obj)
     seu.q$mean.knn.dist <- proj.obj@cellmeta$mean.knn.dist
+    seu.q$mapQ.p.val <- proj.obj@cellmeta$p.val
+    seu.q$mapQ.p.adj <- proj.obj@cellmeta$p.adj
   }
   return(seu.q)
 }
