@@ -17,6 +17,8 @@ navbar:
       menu:
       - text: Quick start
         href: articles/quick_start.html
+      - text: Pan-cancer T cell landscape
+        href: articles/ICB_breast_cancer.html
 
 reference:
 - title: "Class"

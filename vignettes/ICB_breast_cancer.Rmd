@@ -154,6 +154,8 @@ p1 + p2
 
 ### Maping quality
 
+Determine the threshold to distinguish the good and bad projections.
+
 ```{r map_qc_threshold, fig.width=5, fig.height=3}
 data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
 
@@ -161,6 +163,8 @@ ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
   geom_point(size = .3) + 
   geom_vline(xintercept = 1.6, linetype = "dashed", color = "blue")
 ```
+
+QC plot for the reference mapping.
 
 ```{r map_qc_plot, fig.width=14, fig.height=4}
 data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
@@ -197,6 +201,8 @@ p3 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) +
 
 p1 + p2 + p3
 ```
+
+Visualize the projected query cells onto the reference atlas.
 
 ```{r projection_plot, fig.width=15, fig.height=8}
 PlotProjection(seu.q, reference, split.by = "cellSubType", ref.color.by = "cluster.name",
@@ -253,6 +259,13 @@ BoxPlot(cellmeta = seu.q@meta.data, celltype.col = "knn.pred.celltype",
   scale_x_discrete(labels = c("NR", "R"))
 ```
 
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
 
 ## References
 
@@ -264,11 +277,3 @@ BoxPlot(cellmeta = seu.q@meta.data, celltype.col = "knn.pred.celltype",
 
 <div id="refer-anchor-3"></div>
 - [3] [Bassez A, et al. A single-cell map of intratumoral changes during anti-PD1 treatment of patients with breast cancer. Nat Med. 2021 May;27(5):820-832. doi: 10.1038/s41591-021-01323-8. Epub 2021 May 6. PMID: 33958794.](https://pubmed.ncbi.nlm.nih.gov/33958794/)
-
-<details>
-  <summary>**Session Info**</summary>
-```{r}
-sessionInfo()
-```
-</details>
-
