@@ -16,6 +16,4 @@
 ^docs$
 ^pkgdown$
 ^R/*.old$
-^vignettes/*.rds$
-^vignettes/*.R$
-^vignettes/*.html$
+^vignettes$

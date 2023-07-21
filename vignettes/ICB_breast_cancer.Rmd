@@ -1,0 +1,274 @@
+---
+title: "Accurate identification of the tumor-infiltrated T cell heterogeneity in cancer immunology study"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  # tidy = TRUE,
+  # tidy.opts = list(width.cutoff = 95),
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+In recent years, single-cell RNA-sequencing (scRNA-seq) enabled unbiased exploration of T cell diversity in health, disease and response to therapies at an unprecedented scale and resolution. However, a comprehensive definition of T cell “reference” subtypes remains elusive [<sup>1</sup>](#refer-anchor-1). 
+
+Several groups try to integrate T cells in the tumor micro-environment (TME) across different cancer types to build a pan-cancer T cell landscape.  For example, Zheng et al. depicted a pan-cancer landscape of T cell heterogeneity in the TME and established a baseline reference for future scRNA-seq studies associated with cancer treatments [<sup>2</sup>](#refer-anchor-2).
+
+In this tutorial, we demonstrate the process of projecting query T cells onto the pan-cancer T cell landscape (PTCL) to interpret the disparities in CD8 T cell heterogeneity between responsive and non-responsive patients with breast cancer who have undergone immune checkpoint blockade (ICB) therapy [<sup>3</sup>](#refer-anchor-3).  This will be done using ProjectSVR.
+
+## Download related dataset
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+options(timeout = max(3600, getOption("timeout")))
+```
+
+```{r download_dataset, eval=FALSE}
+# reference data
+# We provide reference in qs format for quicklyu saving and readling objects to and from disk.
+# https://cran.r-project.org/web/packages/qs/vignettes/vignette.html
+download.file(url = "", destfile = "ZhengLiangtao.CD8.seurat.qs")
+# query data
+download.file(url = "", destfile = "ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds"")
+```
+
+## Build Reference Model
+
+Load reference dataset. See also 
+
+```{r referenc_plot, fig.width=7, fig.height=5}
+seu.ref <- qs::qread("ZhengLiangtao.CD8.seurat.qs")
+
+data.plot <- seu.ref@misc$data.refplot$meta.data
+
+ggplot(data.plot, aes(UMAP_1, UMAP_2, color = cluster.name), pt.size = .4) + 
+  geom_point(size = .3) + 
+  scale_color_manual(values = seu.ref@misc$data.refplot$colors) +
+  geom_text(inherit.aes = F, data = seu.ref@misc$data.refplot$text.pos,
+            mapping = aes(x, y, label = label), size = 4) + 
+  guides(color = guide_legend(override.aes = list(size = 2))) + 
+  coord_equal(ratio = 1)
+```
+### Transfer raw count matrix to gene set score matrix
+
+```{r add_gene_module_score, fig.width=8, fig.height=4}
+top.genes <- seu.ref@misc$markers
+top.genes <- lapply(top.genes, function(xx) head(xx, 20))
+sapply(top.genes, length)
+
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "UCell", cores = 20)
+
+# The signature score matrix is stored in 'SignatureScore' assay
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+FeaturePlot(seu.ref, features = c("CD8.c12", "CD8.c16"), pt.size = 1)
+```
+
+### Training reference model
+
+```{r train_model}
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
+batch.size = 8000 # number of subsampled cells for each SVR model 
+n.models = 10      # number of SVR models trained
+umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
+                             emb.mat = embeddings.df,
+                             batch.size = batch.size,
+                             n.models = n.models,
+                             cores = 10)
+```
+
+### Save the reference model
+
+ref.cellmeta stores:
+
+1. [optional] colors: for plots
+
+2. [optional] text.pos: text annotation on the reference plots
+
+3. meta.data: cell meta data (embeddings + cell type information)
+
+```{r save_models}
+ref.cellmeta <- seu.ref@misc$data.refplot
+bg.genes <- rownames(seu.ref[["RNA"]])
+
+reference <- list(
+  "models" = list(
+    "umap" = umap.model
+  ),
+  "genes" = list(
+    "gene.sets" = top.genes, # list
+    "bg.genes" = bg.genes # vector
+  ),
+  "ref.cellmeta" = ref.cellmeta # list for reference plot
+)
+
+saveRDS(reference, "model.Zheng.CD8Tcell.rds")
+```
+
+## Map Query to Reference
+
+### Reference mapping
+
+```{r reference_mapping, fig.width=12, fig.height=5}
+reference <- readRDS("model.Zheng.CD8Tcell.rds")
+seu.q <- readRDS("ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds")
+annotations <- c(
+  "E" = "Responders",
+  "n/a" = "n/a",
+  "NE" = "Non-Responders"
+)
+seu.q$group <- annotations[seu.q$expansion]
+
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, 
+                              add.map.qual = T, ncores = 10)
+
+p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "patient_id")
+p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "cellSubType", 
+              label = T) + ggsci::scale_color_d3("category20")
+p1 + p2
+```
+
+### Maping quality
+
+```{r map_qc_threshold, fig.width=5, fig.height=3}
+data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
+
+ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
+  geom_point(size = .3) + 
+  geom_vline(xintercept = 1.6, linetype = "dashed", color = "blue")
+```
+
+```{r map_qc_plot, fig.width=14, fig.height=4}
+data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
+
+cut.off <- 1.6
+low.qual.prop <- prop.table(table(data.plot$mean.knn.dist > cut.off))["TRUE"]
+low.qual.prop <- round(low.qual.prop, 4) *100
+
+p1 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) + 
+  geom_point(aes(color = mean.knn.dist), size = .2) + 
+  scale_color_gradientn(colours = c("blue", "red"), values = c(0.1, 0.2, 1)) + 
+  ggtitle("Mapping quality") + 
+  theme_classic(base_size = 15) + 
+  theme(axis.text = element_text(color = "black"),
+        plot.title = element_text(hjust = .5, face = "bold"))
+
+p2 <- ggplot(data.plot, aes(mean.knn.dist)) + 
+  geom_density(fill = "lightblue") + 
+  geom_vline(xintercept = cut.off, linetype = "dashed", color = "blue") + 
+  ggtitle("Distribution of mean \nkNN dist") + 
+  theme_classic(base_size = 15) + 
+  theme(axis.text = element_text(color = "black"),
+        plot.title = element_text(hjust = .5, face = "bold"))
+
+p3 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) + 
+  geom_point(aes(color = mean.knn.dist > cut.off, size = mean.knn.dist > cut.off)) + 
+  ggtitle(sprintf("Low-quality projection\n(%s%%)", low.qual.prop)) + 
+  scale_color_manual(values = c("grey", "red")) + 
+  scale_size_manual(values = c(0.1, 0.5), guide = "none") + 
+  guides(color = guide_legend(title = sprintf("mean.knn.dist\n(>%s)", cut.off))) + 
+  theme_classic(base_size = 15) + 
+  theme(axis.text = element_text(color = "black"),
+        plot.title = element_text(hjust = .5, face = "bold"))
+
+p1 + p2 + p3
+```
+
+```{r projection_plot, fig.width=15, fig.height=8}
+PlotProjection(seu.q, reference, split.by = "cellSubType", ref.color.by = "cluster.name",
+               ref.size = .5, ref.alpha = .3, query.size = 1, query.alpha = .5, n.row = 2)
+```
+
+### Label transfer
+
+```{r label_transfer}
+seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cluster.name")
+```
+
+## Differential cell population
+
+### Alluvia plot
+
+```{r alluvia_plot, fig.width=6, fig.height=5}
+seu.q <- subset(seu.q, group != "n/a" & timepoint == "Pre")
+seu.q <- subset(seu.q, mean.knn.dist < 1.6)
+seu.q$group <- factor(seu.q$group)
+
+AlluviaPlot(seu.q@meta.data, by = "group", fill = "knn.pred.celltype",
+            colors = reference$ref.cellmeta$colors,
+            bar.width = .5)
+```
+
+### Preference analysis
+
+```{r preference_plot, fig.width=6, fig.height=5}
+GroupPreferencePlot(seu.q@meta.data, group.by = "group", 
+                    preference.on = "knn.pred.celltype", 
+                    column_names_rot = 0, column_names_centered = TRUE)
+```
+
+### Wilcoxon test
+
+```{r wilcoxon_test, fig.width=5, fig.height=4}
+da.test <- AbundanceTest(cellmeta = seu.q@meta.data,
+                         celltype.col = "knn.pred.celltype",
+                         sample.col = "patient_id",
+                         group.col = "group")
+
+## Volcano plot
+VolcanoPlot(da.test, xlab = "log2(R / NR)", ylab = "Frequency",
+            colors = reference$ref.cellmeta$colors)
+```
+
+```{r box_plot, fig.width=6, fig.height=5}
+## Box plot
+BoxPlot(cellmeta = seu.q@meta.data, celltype.col = "knn.pred.celltype",
+        sample.col = "patient_id", group.col = "group",
+        celltypes.show = c("CD8.c12(terminal Tex)", "CD8.c11(GZMK+ Tex)"),
+        legend.ncol = 2) +
+  scale_x_discrete(labels = c("NR", "R"))
+```
+
+
+## References
+
+<div id="refer-anchor-1"></div>
+- [1] [Andreatta M, et al. Interpretation of T cell states from single-cell transcriptomics data using reference atlases. Nat Commun. 2021 May 20;12(1):2965. doi: 10.1038/s41467-021-23324-4. PMID: 34017005.](https://pubmed.ncbi.nlm.nih.gov/34017005/)
+
+<div id="refer-anchor-2"></div>
+- [2] [Zheng L, et al. Pan-cancer single-cell landscape of tumor-infiltrating T cells. Science. 2021 Dec 17;374(6574):abe6474. doi: 10.1126/science.abe6474. Epub 2021 Dec 17. PMID: 34914499.](https://pubmed.ncbi.nlm.nih.gov/34914499/)
+
+<div id="refer-anchor-3"></div>
+- [3] [Bassez A, et al. A single-cell map of intratumoral changes during anti-PD1 treatment of patients with breast cancer. Nat Med. 2021 May;27(5):820-832. doi: 10.1038/s41591-021-01323-8. Epub 2021 May 6. PMID: 33958794.](https://pubmed.ncbi.nlm.nih.gov/33958794/)
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+

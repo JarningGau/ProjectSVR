@@ -21,8 +21,8 @@ knitr::knit_hooks$set(time_it = local({
   }
 }))
 knitr::opts_chunk$set(
-  tidy = TRUE,
-  tidy.opts = list(width.cutoff = 95),
+  #tidy = TRUE,
+  #tidy.opts = list(width.cutoff = 95),
   fig.width = 10,
   message = FALSE,
   warning = FALSE,
@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 
 ## Download related dataset
 
-```{r, results='hide'}
+```{r load_packages, results='hide'}
 library(ProjectSVR)
 library(Seurat)
 library(tidyverse)
@@ -40,8 +40,8 @@ options(timeout = max(3600, getOption("timeout")))
 `%notin%` <- Negate(`%in%`)
 ```
 
-```{r, eval=FALSE}
-# reference datass
+```{r download_dataset, eval=FALSE}
+# reference data
 download.file(url = "https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds", destfile = "disco_pbmc_small.seurat.slim.rds")
 # query data
 download.file(url = "https://zenodo.org/record/8147304/files/query_pbmc_small.seurat.slim.rds", destfile = "query_pbmc_small.seurat.slim.rds")
@@ -50,7 +50,7 @@ download.file(url = "https://zenodo.org/record/8147304/files/query_pbmc_small.se
 
 ## Build Reference Model
 
-```{r, fig.width=9, fig.height=5}
+```{r load_reference, fig.width=9, fig.height=5}
 seu.ref <- readRDS("disco_pbmc_small.seurat.slim.rds")
 
 DimPlot(seu.ref, pt.size = .4) +
@@ -63,7 +63,7 @@ DimPlot(seu.ref, pt.size = .4) +
 
 Here we extract the top25 marker genes for each cell type (ribosomal and mitochondrial genes were removed).
 
-```{r}
+```{r find_markers}
 data(ribo.genes)
 
 table(Idents(seu.ref))
@@ -88,7 +88,7 @@ bg.genes <- do.call(c, top.genes) %>% unique()
 
 ### Transfer raw count matrix to gene set score matrix
 
-```{r, fig.width=5, fig.height=4}
+```{r add_gene_module_score, fig.width=5, fig.height=4}
 seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, 
                               bg.genes = bg.genes, method = "UCell", 
                               cores = 20)
@@ -100,7 +100,7 @@ FeaturePlot(seu.ref, features = "feature.1", pt.size = .3)
 
 ### Training reference model
 
-```{r}
+```{r train_model}
 gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
 embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
 batch.size = 4000 # number of subsampled cells for each SVR model 
@@ -122,7 +122,7 @@ ref.cellmeta stores:
 
 3. meta.data: cell meta data (embeddings + cell type information)
 
-```{r}
+```{r save_model}
 ref.cellmeta <- seu.ref@misc$data.refplot
 ref.cellmeta$meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "cell_type", "cell_subtype"))
 
@@ -144,7 +144,7 @@ saveRDS(reference, "model.disco_pbmc_quickstart.rds")
 
 ### Reference mapping
 
-```{r, fig.width=12, fig.height=5}
+```{r reference_mapping, fig.width=12, fig.height=5}
 reference <- readRDS("model.disco_pbmc_quickstart.rds")
 seu.q <- readRDS("query_pbmc_small.seurat.slim.rds")
 seu.q[["RNA"]]@counts <- seu.q[["RNA"]]@data
@@ -167,7 +167,7 @@ We believe that a good projection means the local topological relationship shoul
 
 To access the p-value of a given `mean.knn.dist`, we build the null distribution by calculating the randomly selected K nearest neighbors for the given cell and repeat the process by 1000 times. Then the empirical p values were calculated according to this null distribution. Adjusted p values were calculated by Benjamini-Hochberg Procedure.
 
-```{r, fig.width=5, fig.height=3}
+```{r map_qc_threshold, fig.width=5, fig.height=3}
 data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
 
 ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
@@ -175,7 +175,7 @@ ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
   geom_vline(xintercept = 4, linetype = "dashed", color = "blue")
 ```
 
-```{r, fig.width=14, fig.height=4}
+```{r map_qc_plot, fig.width=14, fig.height=4}
 data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
 
 cut.off <- 4
@@ -211,7 +211,7 @@ p3 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) +
 p1 + p2 + p3
 ```
 
-```{r, fig.width=18, fig.height=14}
+```{r projection_plot, fig.width=18, fig.height=14}
 seu.q$cell_subtype2 <- seu.q$cell_subtype
 
 PlotProjection(seu.q, reference, split.by = "cell_subtype2", 
@@ -222,14 +222,14 @@ PlotProjection(seu.q, reference, split.by = "cell_subtype2",
 
 ### Label transfer
 
-```{r, fig.width=9, fig.height=5}
+```{r label_transfer, fig.width=9, fig.height=5}
 seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cell_subtype")
 
 DimPlot(seu.q, reduction = "ref.umap", group.by = "knn.pred.celltype") + 
   scale_color_manual(values = reference$ref.cellmeta$colors)
 ```
 
-```{r, fig.width=8, fig.height=7}
+```{r compare_heatmap, fig.width=8, fig.height=7}
 data.stat <- table(seu.q$cell_subtype, seu.q$knn.pred.celltype)
 pheatmap::pheatmap(data.stat, display_numbers = T, number_format = "%.0f", 
                    number_color = "black")
