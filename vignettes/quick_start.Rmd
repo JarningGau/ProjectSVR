@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Download related dataset
+## Download Related Dataset
 
 ```{r load_packages, results='hide'}
 library(ProjectSVR)
@@ -167,48 +167,18 @@ We believe that a good projection means the local topological relationship shoul
 
 To access the p-value of a given `mean.knn.dist`, we build the null distribution by calculating the randomly selected K nearest neighbors for the given cell and repeat the process by 1000 times. Then the empirical p values were calculated according to this null distribution. Adjusted p values were calculated by Benjamini-Hochberg Procedure.
 
-```{r map_qc_threshold, fig.width=5, fig.height=3}
-data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
+```{r map_qc_threshold, fig.width=4, fig.height=3}
+data.plot <- FetchData(seu.q, vars = c("mean.knn.dist", "mapQ.p.adj"))
 
 ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
-  geom_point(size = .3) + 
-  geom_vline(xintercept = 4, linetype = "dashed", color = "blue")
+  geom_point(size = .3)
 ```
 
 ```{r map_qc_plot, fig.width=14, fig.height=4}
-data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
-
-cut.off <- 4
-low.qual.prop <- prop.table(table(data.plot$mean.knn.dist > cut.off))["TRUE"]
-low.qual.prop <- round(low.qual.prop, 4) *100
-
-p1 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) + 
-  geom_point(aes(color = mean.knn.dist), size = .2) + 
-  scale_color_gradientn(colours = c("blue", "red"), values = c(0.1, 0.2, 1)) + 
-  ggtitle("Mapping quality") + 
-  theme_classic(base_size = 15) + 
-  theme(axis.text = element_text(color = "black"),
-        plot.title = element_text(hjust = .5, face = "bold"))
-
-p2 <- ggplot(data.plot, aes(mean.knn.dist)) + 
-  geom_density(fill = "lightblue") + 
-  geom_vline(xintercept = cut.off, linetype = "dashed", color = "blue") + 
-  ggtitle("Distribution of mean \nkNN dist") + 
-  theme_classic(base_size = 15) + 
-  theme(axis.text = element_text(color = "black"),
-        plot.title = element_text(hjust = .5, face = "bold"))
-
-p3 <- ggplot(data.plot, aes(refUMAP_1, refUMAP_2)) + 
-  geom_point(aes(color = mean.knn.dist > cut.off, size = mean.knn.dist > cut.off)) + 
-  ggtitle(sprintf("Low-quality projection\n(%s%%)", low.qual.prop)) + 
-  scale_color_manual(values = c("grey", "red")) + 
-  scale_size_manual(values = c(0.1, 0.5), guide = "none") + 
-  guides(color = guide_legend(title = sprintf("mean.knn.dist\n(>%s)", cut.off))) + 
-  theme_classic(base_size = 15) + 
-  theme(axis.text = element_text(color = "black"),
-        plot.title = element_text(hjust = .5, face = "bold"))
-
-p1 + p2 + p3
+## cutoff by adjusted p value
+MapQCPlot(seu.q, p.adj.cutoff = 1e-3)
+## or mean.knn.dist
+MapQCPlot(seu.q, map.q.cutoff = 4)
 ```
 
 ```{r projection_plot, fig.width=18, fig.height=14}

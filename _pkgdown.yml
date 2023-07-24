@@ -19,6 +19,8 @@ navbar:
         href: articles/quick_start.html
       - text: Pan-cancer T cell landscape
         href: articles/ICB_breast_cancer.html
+      - text: Mouse testicular cell atlas
+        href: articles/mTCA_perturbed_germ_cells.html
 
 reference:
 - title: "Class"

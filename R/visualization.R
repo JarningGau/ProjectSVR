@@ -10,7 +10,7 @@ NULL
 #' @import ggplot2
 #' @import patchwork
 #' @importFrom dplyr arrange
-#'
+#' @concept plot
 #' @export
 MapQCPlot <- function(seu.q, p.adj.cutoff = 1e-4, map.q.cutoff = NULL) {
   data.plot <- Seurat::FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))

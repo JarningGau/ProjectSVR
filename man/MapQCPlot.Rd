@@ -17,3 +17,4 @@ A combined plot for mapping quality.
 \description{
 Visualizing the mapping quality of projected query cells.
 }
+\concept{plot}

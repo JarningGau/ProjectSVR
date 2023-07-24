@@ -1,0 +1,318 @@
+---
+title: "Project the perturbed germ cells onto mouse testicular cell atlas"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+To illustrate ProjectSVR's ability to enable the interpretation of defects of perturbed stages in a continuous developmental trajectory. Here, we provide a tutorial about how to project Zfp541-KO and WT germ cells [<sup>1</sup>](#refer-anchor-1) onto a mouse testicular cell atlas.
+
+In this tutorial, we do not utilize the advanced wrapper functions (`MapQuery` and `LabelTransfer`) to illustrate how to use the functions underly.
+
+We adopt consensus non-negative matrix factorization (cNMF) for feature extraction instead of the `FindAllMarkers` function in Seurat when we didn't know the suitable granularity for cell clusters.
+
+## Download Related Dataset
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+if(!(requireNamespace("sceasy", quietly = TRUE))) {
+  devtools::install_github("cellgeni/sceasy")
+}
+
+options(timeout = max(3600, getOption("timeout")))
+OUTPATH = "perturbed_gc"
+dir.create(OUTPATH)
+```
+
+```{r download_dataset, eval=FALSE}
+# reference data
+# We provide reference in qs format for quicklyu saving and readling objects to and from disk.
+# https://cran.r-project.org/web/packages/qs/vignettes/vignette.html
+download.file(url = "", destfile = "mTCA.seurat.slim.qs")
+# query data
+download.file(url = "", destfile = "query_Zfp541-KO.seurat.slim.qs")
+```
+
+## Feature Selection
+
+### Load reference data
+
+```{r referenc_plot, fig.width=11, fig.height=5}
+seu.ref <- qs::qread("mTCA.seurat.slim.qs")
+
+data.plot <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "Cell_type_symbol") )
+
+ggplot(data.plot, aes(UMAP_1, UMAP_2, color = Cell_type_symbol), pt.size = .4) + 
+  geom_point(size = .1, alpha = .3) + 
+  scale_color_manual(values = seu.ref@misc$data.refplot$colors) +
+  geom_text(inherit.aes = F, data = seu.ref@misc$data.refplot$text.pos,
+            mapping = aes(x, y, label = label), size = 3) + 
+  guides(color = guide_legend(ncol = 2, override.aes = list(size = 4, alpha = 1))) + 
+  DimTheme()
+```
+
+### Make meta cells
+
+Here, we introduce the consensus NMF (cNMF) methods for signature extraction.
+
+To speed up the cNMF procedure, we utilize the meta cell method that merges the adjacent cells in UMAP space into meta cells.
+
+```{r meta_cells, fig.width=8, fig.height=4}
+## Grid the adjacent cells in the UMAP space.
+emb.mat <- seu.ref[["umap"]]@cell.embeddings
+gd <- EstimateKnnDensity(emb.mat = emb.mat)
+
+gd <- subset(gd, bin.density.threshold=1e-4, n.cells.threshold=10)
+plot(gd)
+
+## Make meta cells
+metacell.counts <- MergeCells(seu.ref[["RNA"]]@data, gd = gd, by = "mesh.points")
+dim(metacell.counts)
+```
+
+Now we compress the 188,862 cells into 3934 meta cells.
+
+```{r prepare_input_for_cnmf}
+## The genes expressed in at least 20 cells were kept.
+expr.in.cells <- Matrix::rowSums(metacell.counts > 0)
+metacell.counts <- metacell.counts[expr.in.cells >= 20, ]
+
+## Drop mitochondrial genes
+is.mito <- grepl("^mt-", rownames(metacell.counts))
+metacell.counts <- metacell.counts[!is.mito, ]
+
+## Transfer the Seurat format into h5ad file.
+seu.mc <- CreateSeuratObject(counts = metacell.counts)
+sceasy::convertFormat(seu.mc, from = "seurat", to = "anndata", main_layer = "counts", 
+                      outFile = file.path(OUTPATH, "mTCA.metacells.h5ad"))
+## Save HVGs
+writeLines(seu.ref[["RNA"]]@var.features, file.path(OUTPATH, "mTCA.metacells.hvgs.txt"))
+```
+
+### Run cNMF
+
+```{r cnmf_k_selection, eval=FALSE}
+FindOptimalK(counts.fn = file.path(OUTPATH, "mTCA.metacells.h5ad"),
+             run.name = "K20_K100_by5", 
+             components = seq(20,100,5), 
+             genes.fn = file.path(OUTPATH, "mTCA.metacells.hvgs.txt"),
+             out.path = OUTPATH,
+             n.iter = 20, 
+             cores = 20)
+```
+
+This will generate a deagnostic plot for the K selection under `perturbed_gc/K20_K100_by5/K20_K100_by5.k_selection.png`.
+
+![](../reference/figures/perturbed-gc-cnmf-k-selection.png)
+
+The solution of K = 70 makes the decomposition the less reconstruction error without the loss of solution robustness.
+
+```{r run_cnmf, eval=FALSE}
+RunCNMF(counts.fn = file.path(OUTPATH, "mTCA.metacells.h5ad"), 
+        run.name = "K70", 
+        out.path = OUTPATH, 
+        K = 70, 
+        genes.fn = file.path(OUTPATH, "mTCA.metacells.hvgs.txt"),
+        n.iter = 50, # here we run more iterations.
+        cores = 20, 
+        local.density.cutoff = 0.2,
+        n.top.genes = 100, 
+        show.clustering = TRUE)
+```
+
+### Feature evaluation
+
+```{r}
+top.genes <- read.table(file.path(OUTPATH, "K70/top100_genes.k_70.dt_0_2.txt"), header = T)
+```
+
+Here, we try the [AUCell](https://bioconductor.org/packages/release/bioc/html/AUCell.html) method for calculating signature scores.
+
+```{r feature_eval, eval=FALSE}
+counts <- seu.ref[["RNA"]]@data
+auc.mat <- ComputeModuleScore(counts, gene.sets = top.genes, method = "AUCell", cores = 10)
+saveRDS(auc.mat, file.path(OUTPATH, "mTCA.AUCell.rds"))
+```
+
+```{r feature_plot, fig.width=28, fig.height=30}
+auc.mat <- readRDS(file.path(OUTPATH, "mTCA.AUCell.rds"))
+
+emb.mat <- seu.ref[["umap"]]@cell.embeddings
+sel.cells <- sample(rownames(auc.mat), size = 1e4)
+data.plot <- cbind(auc.mat[sel.cells, ], emb.mat[sel.cells, ])
+data.plot <- data.plot %>% 
+  pivot_longer(cols = 1:70, names_to = "component", values_to = "score")
+
+data.plot %>% 
+  group_split(component) %>% 
+  map(
+    ~ggplot(., aes(UMAP_1, UMAP_2, color = score)) + 
+      geom_point(size = .5) +
+      scale_color_viridis_c() +
+      facet_grid(~ component, labeller = function(x) label_value(x, multi_line = FALSE)) + 
+      theme_bw(base_size = 15)
+  ) %>% 
+  cowplot::plot_grid(plotlist = ., align = 'hv', ncol = 7)
+```
+
+## Build Reference Model
+
+### Training reference model
+
+```{r train_model_umap}
+umap.model <- FitEnsembleSVM(feature.mat = auc.mat, emb.mat = emb.mat, n.models = 20, cores = 20)
+```
+
+
+### Save the reference model
+
+ref.cellmeta stores:
+
+1. [optional] colors: for plots
+
+2. [optional] text.pos: text annotation on the reference plots
+
+3. meta.data: cell meta data (embeddings + cell type information)
+
+```{r save_models}
+ref.cellmeta <- seu.ref@misc$data.refplot
+ref.cellmeta$meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "Cell_type_symbol"))
+
+reference <- list(
+  "models" = list(
+    "umap" = umap.model
+  ),
+  "genes" = list(
+    "gene.sets" = top.genes # list
+  ),
+  "ref.cellmeta" = ref.cellmeta # list for reference plot
+)
+
+saveRDS(reference, "model.mTCA.rds")
+```
+
+## Map Query to Reference
+
+### Reference mapping
+
+```{r reference_mapping, fig.width=12, fig.height=5}
+reference <- readRDS("model.mTCA.rds")
+seu.q <- qs::qread("query_Zfp541-KO.seurat.slim.qs")
+
+newdata <- ComputeModuleScore(seu.q[["RNA"]]@data, gene.sets = top.genes, 
+                              method = "AUCell", cores = 20)
+
+proj.res <- ProjectNewdata(feature.mat = newdata, model = reference$models$umap, cores = 20)
+proj.res
+
+seu.q[["ref.umap"]] <- CreateDimReducObject(proj.res@embeddings, key = "refUMAP_", assay = "RNA")
+
+p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "orig.ident")
+p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "annotation", label = T)
+(p1 + p2) & ggsci::scale_color_d3("category20")
+```
+
+### Mapping quality
+
+```{r map_qc_threshold, fig.width=5, fig.height=3}
+proj.res <- AddProjQual(object = proj.res, k = 20, repeats = 1e4)
+head(proj.res@cellmeta)
+
+seu.q$mean.knn.dist <- proj.res@cellmeta$mean.knn.dist
+seu.q$mapQ.p.val <- proj.res@cellmeta$p.val
+seu.q$mapQ.p.adj <- proj.res@cellmeta$p.adj
+
+data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
+
+ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
+  geom_point(size = .3) + 
+  geom_vline(xintercept = 2.4, linetype = "dashed", color = "blue")
+```
+
+```{r map_qc_plot, fig.width=14, fig.height=4}
+## cutoff by adjusted p value
+MapQCPlot(seu.q, p.adj.cutoff = 1e-3)
+## or mean.knn.dist
+MapQCPlot(seu.q, map.q.cutoff = 2.4)
+```
+
+### Label transfer
+
+```{r label_transfer, fig.width=7, fig.height=4}
+seu.q <- subset(seu.q, mean.knn.dist < 2.4)
+
+## input for KNN label transfer
+ref.cellmeta <- reference$ref.cellmeta$meta.data
+query.emb <- seu.q[["ref.umap"]]@cell.embeddings
+ref.emb <- ref.cellmeta[, paste0("UMAP_", 1:2)]
+ref.labels <- ref.cellmeta[["Cell_type_symbol"]]
+names(ref.labels) <- rownames(ref.cellmeta)
+
+## KNN label transfer
+knn.pred.res <- KnnLabelTransfer(query.emb = query.emb, ref.emb = ref.emb, 
+                                 ref.labels = ref.labels, k = 100)
+knn.pred.mv <- MajorityVote(feature.mat = newdata, 
+                            cell.types = knn.pred.res[, c("labels"), drop = F], 
+                            k = 100, 
+                            min.prop = 0.3)
+
+## write results into Seurat object.
+seu.q$knn.pred.celltype <- knn.pred.res$labels
+seu.q$knn.pred.celltype.major_votes <- knn.pred.mv$labels.major_votes
+ref.celltype.levels <- levels(ref.cellmeta[["Cell_type_symbol"]])
+seu.q$knn.pred.celltype <- factor(seu.q$knn.pred.celltype, levels = ref.celltype.levels)
+seu.q$knn.pred.celltype.major_votes <- factor(seu.q$knn.pred.celltype.major_votes, 
+                                              levels = ref.celltype.levels)
+
+DimPlot(seu.q, reduction = "ref.umap", group.by = "knn.pred.celltype.major_votes", 
+        split.by = "orig.ident") + 
+  ggsci::scale_color_d3()
+```
+
+```{r compare_heatmap, fig.width=6, fig.height=5}
+data.stat <- table(seu.q$annotation, seu.q$knn.pred.celltype.major_votes)
+data.stat <- data.stat[, colSums(data.stat) > 0]
+
+pheatmap::pheatmap(data.stat, display_numbers = T, number_format = "%.0f", 
+                   cluster_rows = F, cluster_cols = F,
+                   number_color = "black")
+```
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+## References
+
+<div id="refer-anchor-1"></div>
+- [1] [Xu J, et al. ZFP541 maintains the repression of pre-pachytene transcriptional programs and promotes male meiosis progression. Cell Rep. 2022 Mar 22;38(12):110540. doi: 10.1016/j.celrep.2022.110540. PMID: 35320728.](https://pubmed.ncbi.nlm.nih.gov/35320728/)
