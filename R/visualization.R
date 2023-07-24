@@ -1,6 +1,53 @@
 #' @include themes.R
 NULL
 
+#' Visualizing the mapping quality of projected query cells.
+#'
+#' @param seu.q The Seurat object, output of ProjectSVR::MapQuery().
+#' @param cut.off The cutoff value for mean.knn.dist. If not provided, the maximum value where mapQ.p.adj > 0 will be used.
+#'
+#' @return A combined plot for mapping quality.
+#' @import ggplot2
+#' @import patchwork
+#' @importFrom dplyr arrange
+#'
+#' @export
+MapQCPlot <- function(seu.q, p.adj.cutoff = 1e-4, map.q.cutoff = NULL) {
+  data.plot <- Seurat::FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
+
+  if(is.null(map.q.cutoff)) {
+    map.q.cutoff <- max(data.plot[data.plot$mapQ.p.adj <= p.adj.cutoff, ]$mean.knn.dist)
+    map.q.cutoff <- round(map.q.cutoff, 2)
+  }
+
+  low.qual.prop <- prop.table(table(data.plot$mean.knn.dist > map.q.cutoff))["TRUE"]
+  low.qual.prop <- round(low.qual.prop, 4) *100
+
+  p1 <- ggplot(data.plot, aes(.data$refUMAP_1, .data$refUMAP_2)) +
+    geom_point(aes(color = .data$mean.knn.dist), size = .2) +
+    scale_color_gradientn(colours = c("blue", "red"), values = c(0.1, 0.2, 1)) +
+    ggtitle("Mapping quality")
+
+  p2 <- ggplot(data.plot, aes(.data$mean.knn.dist)) +
+    geom_density(fill = "lightblue") +
+    geom_vline(xintercept = map.q.cutoff, linetype = "dashed", color = "blue") +
+    ggtitle("Distribution of mean \nkNN dist")
+
+  p3 <- ggplot(data.plot, aes(.data$refUMAP_1, .data$refUMAP_2)) +
+    geom_point(aes(color = .data$mean.knn.dist > map.q.cutoff,
+                   size = .data$mean.knn.dist > map.q.cutoff)) +
+    ggtitle(sprintf("Low-quality projection\n(%s%%)", low.qual.prop)) +
+    scale_color_manual(values = c("grey", "red")) +
+    scale_size_manual(values = c(0.1, 0.5), guide = "none") +
+    guides(color = guide_legend(title = sprintf("mean.knn.dist\n(>%s)", map.q.cutoff)))
+
+  (p1 + p2 + p3) &
+    theme_classic(base_size = 15) &
+    theme(axis.text = element_text(color = "black"),
+          plot.title = element_text(hjust = .5, face = "bold"))
+}
+
+
 
 #' Visualizing the projected query cells on reference via a density plot.
 #'
