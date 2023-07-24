@@ -200,7 +200,7 @@ AddProjQual <- function(object, k=20, repeats=1e4) {
     pred.emb <- pred.emb[rownames(golden.emb), ]
   }
 
-  message("Building k-NN graph on golden.emb ...")
+  message("Building k-NN graph in feature space ...")
   nn.golden = NNHelper(golden.emb, k = k, method = "sklearn", metric = "cosine")
 
   message("Calculating euclidean metric on pred.emb ...")
