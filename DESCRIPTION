@@ -31,6 +31,7 @@ Imports:
     mlr3learners (>= 0.5.2),
     mlr3verse (>= 0.2.2),
     parallel (>= 4.1.2),
+    patchwork,
     pbapply (>= 1.5.0),
     RANN (>= 2.6.1),
     reticulate (>= 1.24),
