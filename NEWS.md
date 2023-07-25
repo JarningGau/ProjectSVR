@@ -1,4 +1,4 @@
-# ProjectSVR (0.1.0.9000)
+# ProjectSVR 0.2.0
 
 - Add nice plot functions and reference mapping wrappers.
 
