@@ -90,11 +90,16 @@ ComputeModuleScore.default <- function(x, gene.sets, bg.genes=NULL, method="UCel
 ComputeModuleScore.Seurat <- function(x, gene.sets, bg.genes=NULL, method="UCell",
                                       min.size=20, batch.size=500, cores=1,
                                       assay = Seurat::DefaultAssay(x), ...) {
-  dge <- x[[assay]]@counts
+  dge <- Seurat::GetAssayData(x, slot = "counts", assay = assay)
+  if (ncol(dge) != ncol(x)) {
+    dge <- Seurat::GetAssayData(x, slot = "data", assay = assay)
+    message("Using 'data' slot for computing gene module score.")
+  } else {
+    message("Using 'counts' slot for computing gene module score.")
+  }
   auc_scores <- ComputeModuleScore.default(x = dge, gene.sets, bg.genes, method,
                                            min.size, batch.size, cores)
   x[["SignatureScore"]] <- Seurat::CreateAssayObject(data = t(auc_scores))
   return(x)
 }
-
 
