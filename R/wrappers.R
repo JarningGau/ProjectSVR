@@ -27,8 +27,8 @@ MapQuery <- function(seu.q, reference, gss.method = "UCell", assay.q = "RNA", ad
     stop("assay.q argument must be a character string specifying an existing assay in the 'seu.q' Seurat object")
   }
   if (!is.numeric(ncores) || ncores < 1) stop("ncores argument must be a positive integer")
-  if (!all(c("bg.genes", "gene.sets") %in% names(reference$genes))) {
-    stop("bg.genes or gene.sets not found in reference$genes element")
+  if (!all(c("gene.sets") %in% names(reference$genes))) {
+    stop("gene.sets not found in reference$genes element")
   }
   gene.sets <- reference$genes$gene.sets
   if (length(names(gene.sets)) == 0) stop("gene.sets names are empty")
@@ -36,7 +36,7 @@ MapQuery <- function(seu.q, reference, gss.method = "UCell", assay.q = "RNA", ad
   ncores <- min(ncores, max_cores)
 
   message("#### Compute Gene Set Score Matrix ####")
-  bg.genes <- reference$genes$bg.genes
+  bg.genes <- reference$genes$bg.genes # if no bg.genes element in genes, bg.genes = NULL
   seu.q <- ComputeModuleScore(seu.q, gene.sets, bg.genes, method = gss.method, cores = ncores)
   Seurat::DefaultAssay(seu.q) <- "SignatureScore"
   gss.mat <- Seurat::FetchData(seu.q, vars = rownames(seu.q))
