@@ -27,9 +27,9 @@ The reference cell atlases involved in ProjectSVR paper are available at
 ### Query dataset
 
 The query datasets involved in ProjectSVR paper are available at
-<https://zenodo.org/record/8191576>
+<https://zenodo.org/record/8191576>.
 
-### Downloading pre-built references:
+### Pre-built reference model
 
 You can download pre-built references from
 [Zenodo](https://zenodo.org/record/8191559).
@@ -60,9 +60,11 @@ You can download pre-built references from
 `ProjectSVR` has been successfully installed on Linux using the devtools
 package to install from GitHub.
 
-Dependencies:
+### Dependencies
 
 -   R &gt;= 4.1
+
+### External packages
 
 Install `AUCell` or `UCell` for signature score calculation.
 
@@ -76,10 +78,10 @@ remotes::install_github("carmonalab/UCell", ref="v1.3")
 BiocManager::install("AUCell")
 ```
 
-If you want to use the
+We provided a wrapper
 [`RunCNMF`](https://jarninggau.github.io/ProjectSVR/reference/RunCNMF.html)
-function for feature selection. The python package
-[`cnmf`](https://github.com/dylkot/cNMF) should installed via
+of python pacakge [`cnmf`](https://github.com/dylkot/cNMF) for feature
+selection. If you want to use it, you should install `cnmf` through
 `reticulate`.
 
 ``` r
@@ -94,7 +96,7 @@ reticulate::py_install("cnmf")
 
 ## Reproducing results from manuscript
 
-Code to reproduce results from the Gao et al. manuscript is available on
+Code to reproduce results from the Gao et al. manuscript is available at
 github.com/jarninggau/ProjectSVR\_reproducibility.
 
 ## Code of Conduct
