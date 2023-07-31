@@ -31,7 +31,7 @@ The query datasets involved in ProjectSVR paper are available at
 
 ### Pre-built reference model
 
-You can download pre-built references from
+You can download pre-built reference models from
 [Zenodo](https://zenodo.org/record/8191559).
 
 | Name                                                            | Source                                         | Version | Download                                                                     |
@@ -52,7 +52,8 @@ You can download pre-built references from
 -   [Mapping tumor-infiltrated T cell to pan-cancer T cell
     landscape.](https://jarninggau.github.io/ProjectSVR/articles/ICB_breast_cancer.html)
 
--   [Mapping the genetic perturbed germ cells onto mouse testicular cell
+-   [Mapping the genetically perturbed germ cells onto mouse testicular
+    cell
     atlas.](https://jarninggau.github.io/ProjectSVR/articles/mTCA_perturbed_germ_cells.html)
 
 ## Installation notes
