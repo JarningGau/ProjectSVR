@@ -34,17 +34,40 @@ install.packages("devtools")
 devtools::install_github("JarningGau/ProjectSVR")
 ```
 
+## Related resources
+
+### Reference atlas
+
+The reference cell atlases involved in ProjectSVR paper are available at https://zenodo.org/record/8191576.
+
+### Query dataset
+
+The query datasets involved in ProjectSVR paper are available at https://zenodo.org/record/8191576
+
+### Downloading pre-built references:
+
+You can download pre-built references from [Zenodo](https://zenodo.org/record/8191559).
+
+
+| Name                                                         | Source                                       | Version | Download                                                     |
+| ------------------------------------------------------------ | -------------------------------------------- | ------- | ------------------------------------------------------------ |
+| PBMC (DISCO)                                                 | https://www.immunesinglecell.org/atlas/blood | 0.1     | [download](https://zenodo.org/record/8191559/files/model.disco_pbmc.rds) |
+| Mouse testicular cell atlas (mTCA)                           | This paper                                   | 0.1     | [download](https://zenodo.org/record/8191559/files/model.mTCA.rds) |
+| Maternal-fetal interface atlas (Vento 2018)                  | https://doi.org/10.1038/s41586-018-0698-6    | 0.1     | [download](https://zenodo.org/record/8191559/files/model.Vento2018.MFI.rds) |
+| Pan cancer tumor infiltrated CD4+ T cell landscape (Zheng 2021) | https://doi.org/10.1126/science.abe6474      | 0.1     | [download](https://zenodo.org/record/8191559/files/model.Zheng.CD4Tcell.rds) |
+| Pan cancer tumor infiltrated CD8+ T cell landscape (Zheng 2021) | https://doi.org/10.1126/science.abe6474      | 0.1     | [download](https://zenodo.org/record/8191559/files/model.Zheng.CD8Tcell.rds) |
+
+
 ## Usage/Demos
 
 ### Tutorials
 
-- Mapping PBMC dataset onto pre-build PBMC reference (from DISCO database).
+- [Quick start: mapping PBMC dataset onto pre-build PBMC reference.](https://jarninggau.github.io/ProjectSVR/articles/quick_start.html)
 
-- Mapping tumor-infiltrated T cell to pan-cancer T cell landscape.
+- [Mapping tumor-infiltrated T cell to pan-cancer T cell landscape.](https://jarninggau.github.io/ProjectSVR/articles/ICB_breast_cancer.html)
 
-### Downloading pre-built references:
+- [Mapping the genetic perturbed germ cells onto mouse testicular cell atlas.](https://jarninggau.github.io/ProjectSVR/articles/mTCA_perturbed_germ_cells.html)
 
-- You can download pre-built references from [Zenodo]().
 
 ## Installation notes
 
@@ -53,8 +76,29 @@ devtools::install_github("JarningGau/ProjectSVR")
 Dependencies:
 
 - R >= 4.1
-- reticulate
-- AUCell
+
+Install `AUCell` or `UCell` for signature score calculation.
+```{r eval=FALSE}
+## install UCell
+# R = 4.3
+BiocManager::install("UCell") # or
+# R < 4.3
+remotes::install_github("carmonalab/UCell", ref="v1.3")
+## install AUCell
+BiocManager::install("AUCell")
+```
+
+If you want to use the [`RunCNMF`](https://jarninggau.github.io/ProjectSVR/reference/RunCNMF.html) function for feature selection. The python package [`cnmf`](https://github.com/dylkot/cNMF) should installed via `reticulate`.
+
+```{r eval=FALSE}
+install.packages("reticulate")
+reticulate::install_miniconda()
+## install sceasy for single cell data format transformation.
+devtools::install_github("cellgeni/sceasy")
+reticulate::py_install("anndata")
+## install cnmf package via reticulate
+reticulate::py_install("cnmf")
+```
 
 ## Reproducing results from manuscript
 
