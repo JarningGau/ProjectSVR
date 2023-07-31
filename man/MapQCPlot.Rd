@@ -9,7 +9,9 @@ MapQCPlot(seu.q, p.adj.cutoff = 1e-04, map.q.cutoff = NULL)
 \arguments{
 \item{seu.q}{The Seurat object, output of ProjectSVR::MapQuery().}
 
-\item{cut.off}{The cutoff value for mean.knn.dist. If not provided, the maximum value where mapQ.p.adj > 0 will be used.}
+\item{p.adj.cutoff}{The adjusted p value cutoff. Default: 1e-4}
+
+\item{map.q.cutoff}{The cutoff for mean.knn.dist. If not provided, the maximum value where mapQ.p.adj > 0 will be used.}
 }
 \value{
 A combined plot for mapping quality.

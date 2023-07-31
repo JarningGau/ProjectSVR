@@ -4,7 +4,8 @@ NULL
 #' Visualizing the mapping quality of projected query cells.
 #'
 #' @param seu.q The Seurat object, output of ProjectSVR::MapQuery().
-#' @param cut.off The cutoff value for mean.knn.dist. If not provided, the maximum value where mapQ.p.adj > 0 will be used.
+#' @param p.adj.cutoff The adjusted p value cutoff. Default: 1e-4
+#' @param map.q.cutoff The cutoff for mean.knn.dist. If not provided, the maximum value where mapQ.p.adj > 0 will be used.
 #'
 #' @return A combined plot for mapping quality.
 #' @import ggplot2
