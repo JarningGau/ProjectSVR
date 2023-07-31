@@ -2,12 +2,65 @@
 #' @include label_transfer.R
 NULL
 
+#' Create reference models
+#' @param umap.model a list of models returned from FitEnsemblSVM() or FitEnsemblMultiClassif().
+#' @param gene.sets a list or data.frame stores gene sets for calculating gene-set scores.
+#' @param meta.data a data.frame contains meta data for reference cells, including the
+#' reference UMAP embeddings and cell labels.
+#' @param bg.genes a vector stores background genes for calculating gene-set score matrix.
+#' @param gss.method method for calculating gene-set scores, one of 'AUCell' and 'UCell'.
+#' @param colors a named colors vector for visualizing the reference atlas. Deafult: NULL
+#' @param text.pos a data.frame contains some annotated text on reference plot.
+#' @return a reference.model class
+#' @concept reference_mapping
+#' @export
+CreateReference <- function(umap.model, gene.sets, meta.data, bg.genes = NULL,
+                            gss.method = NULL, colors = NULL, text.pos = NULL){
+  if (is.null(gss.method)) {
+    stop("`gss.method` argument must be provided.")
+  }
+  if (!gss.method %in% c("AUCell", "UCell")) {
+    stop("`gss.method` should be one of 'AUCell' or 'UCell'")
+  }
+  if (class(umap.model) != "Regression") {
+    stop("Invalid `umap.model` argument.")
+  }
+  if (!class(gene.sets) %in% c("list", "data.frame")) {
+    stop("Invalid `gene.set` argument.")
+  }
+  if (class(meta.data) != "data.frame") {
+    stop("Invalid `meta.data` argument.")
+  }
+  missing.columns <- setdiff(c("x", "y", "label"), colnames(text.pos))
+  if (length(missing.columns) != 0) {
+    stop(sprintf("The following columns are missing in `text.pos`: %s",
+                 paste(missing.columns, collapse = ", ")))
+  }
+  ref.cellmeta <- list(
+    "colors" = colors,
+    "text.pos" = text.pos,
+    "meta.data" = meta.data
+  )
+  reference <- list(
+    "models" = list(
+      "umap" = umap.model
+    ),
+    "genes" = list(
+      "gene.sets" = gene.sets, # list
+      "bg.genes" = bg.genes # vector
+    ),
+    "ref.cellmeta" = ref.cellmeta, # list
+    "gss.method" = gss.method
+  )
+  class(reference) <- "reference.model"
+  return(reference)
+}
+
+
 #' A wrapper for mapping query data onto reference.
 #'
 #' @param seu.q A query Seurat object.
 #' @param reference Reference model.
-#' @param gss.method Method for calculation of gene set score. 'AUCell' or 'UCell'
-#' are supported. Defalut: UCell
 #' @param assay.q The assay used for reference mapping. Default: RNA
 #' @param add.map.qual Whether add mapping quality metric (mean kNN distance). Default: FALSE
 #' @param ncores Number of threads for calculation. Default: 1
@@ -17,19 +70,15 @@ NULL
 #' @concept reference_mapping
 #' @export
 #'
-MapQuery <- function(seu.q, reference, gss.method = "UCell", assay.q = "RNA", add.map.qual = FALSE, ncores = 1) {
+MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1) {
   ## check parameters
   if (!inherits(seu.q, "Seurat")) stop("seu.q argument must be a Seurat object")
-  if (!is.list(reference) || !all(c("genes", "models") %in% names(reference))) {
-    stop("reference argument must be a list containing 'genes' and 'models' elements")
-  }
+  if (class(reference) != "reference.model") stop("Invalid reference argument")
   if (!is.character(assay.q) || !(assay.q %in% names(seu.q@assays))) {
     stop("assay.q argument must be a character string specifying an existing assay in the 'seu.q' Seurat object")
   }
   if (!is.numeric(ncores) || ncores < 1) stop("ncores argument must be a positive integer")
-  if (!all(c("gene.sets") %in% names(reference$genes))) {
-    stop("gene.sets not found in reference$genes element")
-  }
+  gss.method <- reference$gss.method
   gene.sets <- reference$genes$gene.sets
   if (length(names(gene.sets)) == 0) stop("gene.sets names are empty")
   max_cores <- parallel::detectCores() / 2
@@ -80,14 +129,6 @@ LabelTransfer <- function(seu.q, reference, reduction.q = "ref.umap",
     stop("Input 'reduction.q' does not exist in seu.q.")
   }
 
-  # 检查输入的 reference 是否包含指定的元素
-  required_elements <- c("ref.cellmeta")
-  missing_elements <- setdiff(required_elements, names(reference))
-  if(length(missing_elements) > 0){
-    stop(paste0("Input 'reference' is missing the following elements: ",
-                paste(missing_elements, collapse = ", ")))
-  }
-
   # 检查输入的 ref.emb.col 的长度是否合法
   if(length(ref.emb.col) != 2){
     stop("Input 'ref.emb.col' must contain two column names for embedding coordinates.")
@@ -95,7 +136,7 @@ LabelTransfer <- function(seu.q, reference, reduction.q = "ref.umap",
 
   # 检查输入的 ref.label.col 是否在 reference$ref.cellmeta$meta.data 中存在
   if(!(ref.label.col %in% colnames(reference$ref.cellmeta$meta.data))){
-    stop("Input 'ref.label.col' does not exist in reference$ref.cellmeta.")
+    stop("Input 'ref.label.col' does not exist in reference$ref.cellmeta$meta.data.")
   }
 
   # 检查输入的 k 是否为正整数

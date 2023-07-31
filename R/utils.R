@@ -35,25 +35,6 @@ mcFindAllMarkers <- function(seu, do.flatten=TRUE, only.pos=TRUE, n.cores=10, ..
   return(marker_results)
 }
 
-# #' save models
-# #' @param model.list a list of models returned from FitEnsemblSVM() or FitEnsemblMultiClassif().
-# #' @param gene.sets a list stores gene sets for calculating gene-set score matrix.
-# #' @param bg.genes a vector stores bg genes for calculating gene-set score matrix.
-# #' @param ref.cellmeta a data.frame stores cell types or other labels of reference atlas.
-# #' @return a model class
-# #' @export
-# CreateModelObject <- function(model.list, gene.sets, bg.genes, ref.cellmeta){
-#   svr.obj <- list(
-#     "models" = model.list,
-#     "genes" = list(
-#       "gene.sets" = gene.sets, # list
-#       "bg.genes" = bg.genes # vector
-#     ),
-#     "ref.cellmeta" = ref.cellmeta # data.frame
-#   )
-#   class(svr.obj) <- "SVR"
-#   return(svr.obj)
-# }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #### Internal ####
