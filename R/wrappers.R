@@ -31,10 +31,12 @@ CreateReference <- function(umap.model, gene.sets, meta.data, bg.genes = NULL,
   if (class(meta.data) != "data.frame") {
     stop("Invalid `meta.data` argument.")
   }
-  missing.columns <- setdiff(c("x", "y", "label"), colnames(text.pos))
-  if (length(missing.columns) != 0) {
-    stop(sprintf("The following columns are missing in `text.pos`: %s",
-                 paste(missing.columns, collapse = ", ")))
+  if (!is.null(text.pos)) {
+    missing.columns <- setdiff(c("x", "y", "label"), colnames(text.pos))
+    if (length(missing.columns) != 0) {
+      stop(sprintf("The following columns are missing in `text.pos`: %s",
+                   paste(missing.columns, collapse = ", ")))
+    }
   }
   ref.cellmeta <- list(
     "colors" = colors,
