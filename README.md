@@ -35,7 +35,7 @@ You can download pre-build reference models from
 
 ## Tutorials
 
-the ProjectSVR webpage with all the documentation and tutorials is
+The ProjectSVR webpage with all the documentation and tutorials is
 [here](https://jarninggau.github.io/ProjectSVR/).
 
 We have various examples, including:

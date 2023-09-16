@@ -51,7 +51,7 @@ You can download pre-build reference models from [Zenodo](https://zenodo.org/rec
 
 ## Tutorials
 
-the ProjectSVR webpage with all the documentation and tutorials is [here](https://jarninggau.github.io/ProjectSVR/).
+The ProjectSVR webpage with all the documentation and tutorials is [here](https://jarninggau.github.io/ProjectSVR/).
 
 We have various examples, including:
 
