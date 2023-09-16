@@ -44,7 +44,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">ProjectSVR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -57,14 +57,51 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li>
+<li class="dropdown-header">Generic example</li>
+    <li>
       <a href="articles/quick_start.html">Quick start</a>
     </li>
+    <li class="divider">
+    </li>
+<li class="dropdown-header">Build reference model</li>
     <li>
-      <a href="articles/ICB_breast_cancer.html">Pan-cancer T cell landscape</a>
+      <a href="articles/model_pbmc.html">DISCO blood atlas</a>
     </li>
     <li>
-      <a href="articles/mTCA_perturbed_germ_cells.html">Mouse testicular cell atlas</a>
+      <a href="articles/model_mfia.html">Maternal-fetal interface atlas</a>
+    </li>
+    <li>
+      <a href="articles/model_pctl.html">Pan-cancer T cell lanscape</a>
+    </li>
+    <li>
+      <a href="articles/model_mtca.html">Mouse testicular cell atlas</a>
+    </li>
+    <li class="divider">
+    </li>
+<li class="dropdown-header">Map query dataset</li>
+    <li>
+      <a href="articles/mapQuery_immune_RPL.html">Decidual immune microenvironment of RPL patients</a>
+    </li>
+    <li>
+      <a href="articles/mapQuery_ICB_BRCA.html">ICB responsiveness of BRCA</a>
+    </li>
+    <li>
+      <a href="articles/mapQuery_Zfp541-KO.html">Genetic perturbed germ cells (Zfp541-KO)</a>
+    </li>
+    <li>
+      <a href="articles/mapQuery_Ythdc2-KO.html">Genetic perturbed germ cells (Ythdc2-KO)</a>
+    </li>
+    <li>
+      <a href="articles/mapQuery_invitro_meiosis.html">In vitro induced meiosis</a>
+    </li>
+    <li class="divider">
+    </li>
+<li class="dropdown-header">MISC</li>
+    <li>
+      <a href="articles/misc_Ythdc2-KO_pseudotime.html">Training the reference pseudotime model</a>
+    </li>
+    <li>
+      <a href="articles/misc_disco_pbmc_svm.html">Training the SVM model for cell type prediction</a>
     </li>
   </ul>
 </li>
@@ -97,9 +134,107 @@
 <div class="section level1">
 <div class="page-header"><h1 id="projectsvr-">ProjectSVR <img src="reference/figures/ProjectSVR-logo.png" align="right" width="80px/"><a class="anchor" aria-label="anchor" href="#projectsvr-"></a>
 </h1></div>
-
+<p><a href="https://github.com/JarningGau/ProjectSVR" class="external-link"><img src="https://img.shields.io/badge/devel%20version-0.2.0-green.svg"></a></p>
 <p><code>ProjectSVR</code> is a machine learning-based algorithm for mapping the query cells onto well-constructed reference atlas.</p>
 <p><img src="reference/figures/ProjectSVR-workflow.png" width="600"></p>
+<div class="section level2">
+<h2 id="related-resources">Related resources<a class="anchor" aria-label="anchor" href="#related-resources"></a>
+</h2>
+<div class="section level3">
+<h3 id="reference-atlas">Reference atlas<a class="anchor" aria-label="anchor" href="#reference-atlas"></a>
+</h3>
+<p>The reference cell atlases involved in ProjectSVR paper are available at <a href="https://zenodo.org/record/8350746" class="external-link uri">https://zenodo.org/record/8350746</a>.</p>
+</div>
+<div class="section level3">
+<h3 id="query-dataset">Query dataset<a class="anchor" aria-label="anchor" href="#query-dataset"></a>
+</h3>
+<p>The query datasets involved in ProjectSVR paper are available at <a href="https://zenodo.org/record/8350748" class="external-link uri">https://zenodo.org/record/8350748</a>.</p>
+</div>
+<div class="section level3">
+<h3 id="pre-built-reference-model">Pre-built reference model<a class="anchor" aria-label="anchor" href="#pre-built-reference-model"></a>
+</h3>
+<p>You can download pre-build reference models from <a href="https://zenodo.org/record/8350732" class="external-link">Zenodo</a>.</p>
+<table class="table">
+<colgroup>
+<col width="31%">
+<col width="23%">
+<col width="4%">
+<col width="40%">
+</colgroup>
+<thead><tr class="header">
+<th>Name</th>
+<th>Source</th>
+<th>Version</th>
+<th>Download</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>PBMC (DISCO)</td>
+<td><a href="https://www.immunesinglecell.org/atlas/blood" class="external-link uri">https://www.immunesinglecell.org/atlas/blood</a></td>
+<td>0.2</td>
+<td><a href="https://zenodo.org/record/8350732/files/model.disco_pbmc.rds" class="external-link">download</a></td>
+</tr>
+<tr class="even">
+<td>Mouse testicular cell atlas (mTCA)</td>
+<td>This paper</td>
+<td>0.2</td>
+<td><a href="https://zenodo.org/record/8350732/files/model.mTCA.rds" class="external-link">download</a></td>
+</tr>
+<tr class="odd">
+<td>Maternal-fetal interface atlas (Vento 2018)</td>
+<td><a href="https://doi.org/10.1038/s41586-018-0698-6" class="external-link uri">https://doi.org/10.1038/s41586-018-0698-6</a></td>
+<td>0.2</td>
+<td><a href="https://zenodo.org/record/8350732/files/model.Vento2018.MFI.rds" class="external-link">download</a></td>
+</tr>
+<tr class="even">
+<td>Pan cancer tumor infiltrated CD4+ T cell landscape (Zheng 2021)</td>
+<td><a href="https://doi.org/10.1126/science.abe6474" class="external-link uri">https://doi.org/10.1126/science.abe6474</a></td>
+<td>0.2</td>
+<td><a href="https://zenodo.org/record/8350732/files/model.Zheng2021.CD4Tcell.rds" class="external-link">download</a></td>
+</tr>
+<tr class="odd">
+<td>Pan cancer tumor infiltrated CD8+ T cell landscape (Zheng 2021)</td>
+<td><a href="https://doi.org/10.1126/science.abe6474" class="external-link uri">https://doi.org/10.1126/science.abe6474</a></td>
+<td>0.2</td>
+<td><a href="https://zenodo.org/record/8350732/files/model.Zheng2021.CD8Tcell.rds" class="external-link">download</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section level2">
+<h2 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>
+</h2>
+<p>The ProjectSVR webpage with all the documentation and tutorials is <a href="https://jarninggau.github.io/ProjectSVR/">here</a>.</p>
+<p>We have various examples, including:</p>
+<p>A generic quick start tutorial on a demo PBMC scRNA-seq dataset.</p>
+<ul>
+<li><a href="https://jarninggau.github.io/ProjectSVR/articles/quick_start.html">Quick start: mapping PBMC dataset onto pre-build PBMC reference.</a></li>
+</ul>
+<p>Tutorials on how to build projection models for reference atlas.</p>
+<ul>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/model_pbmc.html">DISCO blood atlas</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/model_mfia.html">Maternal-fetal interface atlas</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/model_pctl.html">Pan-cancer T cell lanscape</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/model_mtca.html">Mouse testicular cell atlas</a></p></li>
+</ul>
+<p>Tutorials on how to project the query datasets onto reference atlas via pre-build models.</p>
+<ul>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/mapQuery_immune_RPL.html">Decidual immune microenvironment of RPL patients</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/mapQuery_ICB_BRCA.html">ICB responsiveness of BRCA</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/mapQuery_Zfp541-KO.html">Genetic perturbed germ cells (Zfp541-KO)</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/mapQuery_Ythdc2-KO.html">Genetic perturbed germ cells (Ythdc2-KO)</a></p></li>
+<li><p><a href="https://jarninggau.github.io/ProjectSVR/articles/mapQuery_invitro_meiosis.html">In vitro induced meiosis</a></p></li>
+</ul>
+<p>A tutorial on how to train a model to predict pseudotime.</p>
+<ul>
+<li><a href="https://jarninggau.github.io/ProjectSVR/articles/misc_Ythdc2-KO_pseudotime.html">Training the reference pseudotime model</a></li>
+</ul>
+<p>A tutorial on how to train a multi-classifier for cell type auto annotation.</p>
+<ul>
+<li><a href="https://jarninggau.github.io/ProjectSVR/articles/misc_disco_pbmc_svm.html">Training an ensemble SVM model for cell type prediction</a></li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -107,39 +242,36 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"JarningGau/ProjectSVR"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="usagedemos">Usage/Demos<a class="anchor" aria-label="anchor" href="#usagedemos"></a>
-</h2>
+<p><code>ProjectSVR</code> has been successfully installed and test on ubuntu, centOS and wsl2.</p>
 <div class="section level3">
-<h3 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>
+<h3 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
 </h3>
-<ul>
-<li><p>Mapping PBMC dataset onto pre-build PBMC reference (from DISCO database).</p></li>
-<li><p>Mapping tumor-infiltrated T cell to pan-cancer T cell landscape.</p></li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="downloading-pre-built-references">Downloading pre-built references:<a class="anchor" aria-label="anchor" href="#downloading-pre-built-references"></a>
-</h3>
-<ul><li>You can download pre-built references from <a href="">Zenodo</a>.</li></ul>
-</div>
-</div>
-<div class="section level2">
-<h2 id="installation-notes">Installation notes<a class="anchor" aria-label="anchor" href="#installation-notes"></a>
-</h2>
-<p><code>ProjectSVR</code> has been successfully installed on Linux using the devtools package to install from GitHub.</p>
-<p>Dependencies:</p>
 <ul>
 <li>R &gt;= 4.1</li>
-<li>reticulate</li>
-<li>AUCell</li>
 </ul>
 </div>
-<div class="section level2">
-<h2 id="reproducing-results-from-manuscript">Reproducing results from manuscript<a class="anchor" aria-label="anchor" href="#reproducing-results-from-manuscript"></a>
-</h2>
-<p>Code to reproduce results from the Gao et al. manuscript is available on github.com/jarninggau/ProjectSVR_reproducibility.</p>
+<div class="section level3">
+<h3 id="external-packages">External packages<a class="anchor" aria-label="anchor" href="#external-packages"></a>
+</h3>
+<p>Install <code>AUCell</code> or <code>UCell</code> for signature score calculation.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## install UCell</span></span>
+<span><span class="co"># R = 4.3</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"UCell"</span><span class="op">)</span> <span class="co"># or</span></span>
+<span><span class="co"># R &lt; 4.3</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"carmonalab/UCell"</span>, ref<span class="op">=</span><span class="st">"v1.3"</span><span class="op">)</span></span>
+<span><span class="co">## install AUCell</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"AUCell"</span><span class="op">)</span></span></code></pre></div>
+<p>We provided a wrapper <a href="https://jarninggau.github.io/ProjectSVR/reference/RunCNMF.html"><code>RunCNMF</code></a> of python pacakge <a href="https://github.com/dylkot/cNMF" class="external-link"><code>cnmf</code></a> for feature selection. If you want to use it, you should install <code>cnmf</code> through <code>reticulate</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"reticulate"</span><span class="op">)</span></span>
+<span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/install_miniconda.html" class="external-link">install_miniconda</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">## install sceasy for single cell data format transformation.</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"cellgeni/sceasy"</span><span class="op">)</span></span>
+<span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/py_install.html" class="external-link">py_install</a></span><span class="op">(</span><span class="st">"anndata"</span><span class="op">)</span></span>
+<span><span class="co">## install cnmf package via reticulate</span></span>
+<span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/py_install.html" class="external-link">py_install</a></span><span class="op">(</span><span class="st">"cnmf"</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
@@ -187,12 +319,7 @@
 </ul>
 </div>
 
-<div class="dev-status">
-<h2 data-toc-skip>Dev status</h2>
-<ul class="list-unstyled">
-<li><a href="https://github.com/JarningGau/ProjectSVR" class="external-link"><img src="https://img.shields.io/badge/devel%20version-0.1.0-green.svg"></a></li>
-</ul>
-</div>
+
 
   </div>
 </div>
@@ -205,7 +332,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

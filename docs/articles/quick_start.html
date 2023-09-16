@@ -39,7 +39,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ProjectSVR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -52,14 +52,51 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li>
+<li class="dropdown-header">Generic example</li>
+    <li>
       <a href="../articles/quick_start.html">Quick start</a>
     </li>
+    <li class="divider">
+    </li>
+<li class="dropdown-header">Build reference model</li>
     <li>
-      <a href="../articles/ICB_breast_cancer.html">Pan-cancer T cell landscape</a>
+      <a href="../articles/model_pbmc.html">DISCO blood atlas</a>
     </li>
     <li>
-      <a href="../articles/mTCA_perturbed_germ_cells.html">Mouse testicular cell atlas</a>
+      <a href="../articles/model_mfia.html">Maternal-fetal interface atlas</a>
+    </li>
+    <li>
+      <a href="../articles/model_pctl.html">Pan-cancer T cell lanscape</a>
+    </li>
+    <li>
+      <a href="../articles/model_mtca.html">Mouse testicular cell atlas</a>
+    </li>
+    <li class="divider">
+    </li>
+<li class="dropdown-header">Map query dataset</li>
+    <li>
+      <a href="../articles/mapQuery_immune_RPL.html">Decidual immune microenvironment of RPL patients</a>
+    </li>
+    <li>
+      <a href="../articles/mapQuery_ICB_BRCA.html">ICB responsiveness of BRCA</a>
+    </li>
+    <li>
+      <a href="../articles/mapQuery_Zfp541-KO.html">Genetic perturbed germ cells (Zfp541-KO)</a>
+    </li>
+    <li>
+      <a href="../articles/mapQuery_Ythdc2-KO.html">Genetic perturbed germ cells (Ythdc2-KO)</a>
+    </li>
+    <li>
+      <a href="../articles/mapQuery_invitro_meiosis.html">In vitro induced meiosis</a>
+    </li>
+    <li class="divider">
+    </li>
+<li class="dropdown-header">MISC</li>
+    <li>
+      <a href="../articles/misc_Ythdc2-KO_pseudotime.html">Training the reference pseudotime model</a>
+    </li>
+    <li>
+      <a href="../articles/misc_disco_pbmc_svm.html">Training the SVM model for cell type prediction</a>
     </li>
   </ul>
 </li>
@@ -92,7 +129,8 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Quick start of ProjectSVR</h1>
             
-            <h4 data-toc-skip class="date">Compiled: July 24, 2023</h4>
+            <h4 data-toc-skip class="date">Compiled: September 16,
+2023</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/JarningGau/ProjectSVR/blob/HEAD/vignettes/quick_start.Rmd" class="external-link"><code>vignettes/quick_start.Rmd</code></a></small>
       <div class="hidden name"><code>quick_start.Rmd</code></div>
@@ -111,16 +149,17 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>timeout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">3600</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"timeout"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">`%notin%`</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Negate</a></span><span class="op">(</span><span class="va">`%in%`</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># reference data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span>url <span class="op">=</span> <span class="st">"https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds"</span>, destfile <span class="op">=</span> <span class="st">"disco_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.exists</a></span><span class="op">(</span><span class="st">"quickstart"</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="st">"quickstart"</span><span class="op">)</span></span>
+<span><span class="co"># reference data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span>url <span class="op">=</span> <span class="st">"https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds"</span>, destfile <span class="op">=</span> <span class="st">"quickstart/disco_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span>
 <span><span class="co"># query data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span>url <span class="op">=</span> <span class="st">"https://zenodo.org/record/8147304/files/query_pbmc_small.seurat.slim.rds"</span>, destfile <span class="op">=</span> <span class="st">"query_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span>url <span class="op">=</span> <span class="st">"https://zenodo.org/record/8147304/files/query_pbmc_small.seurat.slim.rds"</span>, destfile <span class="op">=</span> <span class="st">"quickstart/query_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="build-reference-model">Build Reference Model<a class="anchor" aria-label="anchor" href="#build-reference-model"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">seu.ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"disco_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">seu.ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"quickstart/disco_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seu.ref</span>, pt.size <span class="op">=</span> <span class="fl">.4</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">seu.ref</span><span class="op">@</span><span class="va">misc</span><span class="op">$</span><span class="va">data.refplot</span><span class="op">$</span><span class="va">colors</span><span class="op">)</span> <span class="op">+</span></span>
@@ -130,7 +169,8 @@
 <div class="section level3">
 <h3 id="extract-signatures">Extract signatures<a class="anchor" aria-label="anchor" href="#extract-signatures"></a>
 </h3>
-<p>Here we extract the top25 marker genes for each cell type (ribosomal and mitochondrial genes were removed).</p>
+<p>Here we extract the top25 marker genes for each cell type (ribosomal
+and mitochondrial genes were removed).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ribo.genes</span><span class="op">)</span></span>
 <span></span>
@@ -167,7 +207,7 @@
 <span></span>
 <span><span class="va">top.genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">all.markers</span>, <span class="kw">function</span><span class="op">(</span><span class="va">xx</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">yy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">xx</span>, <span class="va">p_val_adj</span> <span class="op">&lt;</span> <span class="fl">1e-6</span> <span class="op">&amp;</span> <span class="va">avg_log2FC</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">yy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">yy</span>, <span class="va">Gene.name.uniq</span> <span class="op">%notin%</span> <span class="va">ribo.genes</span><span class="op">)</span></span>
+<span>  <span class="va">yy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">yy</span>, <span class="va">Gene.name.uniq</span> <span class="op"><a href="https://rdrr.io/pkg/scutilsR/man/grapes-notin-grapes.html" class="external-link">%notin%</a></span> <span class="va">ribo.genes</span><span class="op">)</span></span>
 <span>  <span class="va">yy</span> <span class="op">&lt;-</span> <span class="va">yy</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^MT-"</span>, <span class="va">yy</span><span class="op">$</span><span class="va">Gene.name.uniq</span><span class="op">)</span>, <span class="op">]</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">yy</span><span class="op">$</span><span class="va">Gene.name.uniq</span>, <span class="fl">25</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
@@ -236,28 +276,29 @@
 <div class="section level3">
 <h3 id="save-the-reference-model">Save the reference model<a class="anchor" aria-label="anchor" href="#save-the-reference-model"></a>
 </h3>
-<p>ref.cellmeta stores:</p>
 <ol style="list-style-type: decimal">
 <li><p>[optional] colors: for plots</p></li>
-<li><p>[optional] text.pos: text annotation on the reference plots</p></li>
-<li><p>meta.data: cell meta data (embeddings + cell type information)</p></li>
+<li><p>[optional] text.pos: text annotation on the reference
+plots</p></li>
+<li><p>meta.data: cell meta data (embeddings + cell type
+information)</p></li>
 </ol>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ref.cellmeta</span> <span class="op">&lt;-</span> <span class="va">seu.ref</span><span class="op">@</span><span class="va">misc</span><span class="op">$</span><span class="va">data.refplot</span></span>
-<span><span class="va">ref.cellmeta</span><span class="op">$</span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/FetchData.html" class="external-link">FetchData</a></span><span class="op">(</span><span class="va">seu.ref</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"UMAP_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span>, <span class="st">"cell_type"</span>, <span class="st">"cell_subtype"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="va">seu.ref</span><span class="op">@</span><span class="va">misc</span><span class="op">$</span><span class="va">data.refplot</span><span class="op">$</span><span class="va">colors</span></span>
+<span><span class="va">text.pos</span> <span class="op">&lt;-</span> <span class="va">seu.ref</span><span class="op">@</span><span class="va">misc</span><span class="op">$</span><span class="va">data.refplot</span><span class="op">$</span><span class="va">text.pos</span></span>
+<span><span class="va">meta.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/FetchData.html" class="external-link">FetchData</a></span><span class="op">(</span><span class="va">seu.ref</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"UMAP_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span>, <span class="st">"cell_type"</span>, <span class="st">"cell_subtype"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"models"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"umap"</span> <span class="op">=</span> <span class="va">umap.model</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  <span class="st">"genes"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"gene.sets"</span> <span class="op">=</span> <span class="va">top.genes</span>, <span class="co"># list</span></span>
-<span>    <span class="st">"bg.genes"</span> <span class="op">=</span> <span class="va">bg.genes</span> <span class="co"># vector</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  <span class="st">"ref.cellmeta"</span> <span class="op">=</span> <span class="va">ref.cellmeta</span> <span class="co"># list for reference plot</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">reference</span>, <span class="st">"model.disco_pbmc_quickstart.rds"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateReference.html">CreateReference</a></span><span class="op">(</span>umap.model <span class="op">=</span> <span class="va">umap.model</span>, <span class="co"># fitted SVR model</span></span>
+<span>                             gene.sets <span class="op">=</span> <span class="va">top.genes</span>, <span class="co"># signatures for calculating gene set score</span></span>
+<span>                             bg.genes <span class="op">=</span> <span class="va">bg.genes</span>,   <span class="co"># background genes for calculating gene set score</span></span>
+<span>                             meta.data <span class="op">=</span> <span class="va">meta.data</span>, <span class="co"># cell meta data of reference atlas</span></span>
+<span>                             gss.method <span class="op">=</span> <span class="st">"UCell"</span>,  <span class="co"># algorithm for calculation of gene set score</span></span>
+<span>                             colors <span class="op">=</span> <span class="va">colors</span>,       <span class="co"># colors map to cell type</span></span>
+<span>                             text.pos <span class="op">=</span> <span class="va">text.pos</span><span class="op">)</span>   <span class="co"># text annotation on projection plot</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">reference</span><span class="op">)</span> <span class="co"># return a reference model</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "reference.model"</span></span></code></pre>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">reference</span>, <span class="st">"quickstart/model.disco_pbmc_quickstart.rds"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -266,12 +307,11 @@
 <div class="section level3">
 <h3 id="reference-mapping">Reference mapping<a class="anchor" aria-label="anchor" href="#reference-mapping"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"model.disco_pbmc_quickstart.rds"</span><span class="op">)</span></span>
-<span><span class="va">seu.q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"query_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"quickstart/model.disco_pbmc_quickstart.rds"</span><span class="op">)</span></span>
+<span><span class="va">seu.q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"quickstart/query_pbmc_small.seurat.slim.rds"</span><span class="op">)</span></span>
 <span><span class="va">seu.q</span><span class="op">[[</span><span class="st">"RNA"</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="va">seu.q</span><span class="op">[[</span><span class="st">"RNA"</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">data</span></span>
-<span><span class="va">seu.q</span> <span class="op">&lt;-</span> <span class="fu">ProjectSVR</span><span class="fu">::</span><span class="fu"><a href="../reference/MapQuery.html">MapQuery</a></span><span class="op">(</span><span class="va">seu.q</span>, reference <span class="op">=</span> <span class="va">reference</span>, </span>
-<span>                              add.map.qual <span class="op">=</span> <span class="cn">T</span>, ncores <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">seu.q</span> <span class="op">&lt;-</span> <span class="fu">ProjectSVR</span><span class="fu">::</span><span class="fu"><a href="../reference/MapQuery.html">MapQuery</a></span><span class="op">(</span><span class="va">seu.q</span>, reference <span class="op">=</span> <span class="va">reference</span>, add.map.qual <span class="op">=</span> <span class="cn">T</span>, ncores <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seu.q</span>, reduction <span class="op">=</span> <span class="st">"ref.umap"</span>, group.by <span class="op">=</span> <span class="st">"donor"</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seu.q</span>, reduction <span class="op">=</span> <span class="st">"ref.umap"</span>, group.by <span class="op">=</span> <span class="st">"cell_subtype"</span>, </span>
@@ -282,28 +322,41 @@
 <div class="section level3">
 <h3 id="maping-quality">Maping quality<a class="anchor" aria-label="anchor" href="#maping-quality"></a>
 </h3>
-<p>The metric for evaluating the mapping quality is essential for users to identify and discard erroneous projected cells. We introduce the mean kNN distance and demonstrate its utilization for quality control in reference mapping using ProjectSVR.</p>
-<p>We believe that a good projection means the local topological relationship should be kept after projection. Thus we build a nearest neighbor (NN) graph in feature space (signature score matrix) and measure the average distance of its K nearest neighbors (called <code>mean.knn.dist</code>). A smaller <code>mean.knn.dist</code> means a good projection.</p>
+<p>The metric for evaluating the mapping quality is essential for users
+to identify and discard erroneous projected cells. We introduce the mean
+kNN distance and demonstrate its utilization for quality control in
+reference mapping using ProjectSVR.</p>
+<p>We believe that a good projection means the local topological
+relationship should be kept after projection. Thus we build a nearest
+neighbor (NN) graph in feature space (signature score matrix) and
+measure the average distance of its K nearest neighbors (called
+<code>mean.knn.dist</code>). A smaller <code>mean.knn.dist</code> means
+a good projection.</p>
 <p><img src="../reference/figures/mean-knn-dist.png"></p>
-<p>To access the p-value of a given <code>mean.knn.dist</code>, we build the null distribution by calculating the randomly selected K nearest neighbors for the given cell and repeat the process by 1000 times. Then the empirical p values were calculated according to this null distribution. Adjusted p values were calculated by Benjamini-Hochberg Procedure.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p>To access the p-value of a given <code>mean.knn.dist</code>, we build
+the null distribution by calculating the randomly selected K nearest
+neighbors for the given cell and repeat the process by 1000 times. Then
+the empirical p values were calculated according to this null
+distribution. Adjusted p values were calculated by Benjamini-Hochberg
+Procedure.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data.plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/FetchData.html" class="external-link">FetchData</a></span><span class="op">(</span><span class="va">seu.q</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean.knn.dist"</span>, <span class="st">"mapQ.p.adj"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">data.plot</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">mean.knn.dist</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">mapQ.p.adj</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">.3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quick_start_files/figure-html/map_qc_threshold-1.png" width="384"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## cutoff by adjusted p value</span></span>
 <span><span class="fu"><a href="../reference/MapQCPlot.html">MapQCPlot</a></span><span class="op">(</span><span class="va">seu.q</span>, p.adj.cutoff <span class="op">=</span> <span class="fl">1e-3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quick_start_files/figure-html/map_qc_plot-1.png" width="1344"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## or mean.knn.dist</span></span>
 <span><span class="fu"><a href="../reference/MapQCPlot.html">MapQCPlot</a></span><span class="op">(</span><span class="va">seu.q</span>, map.q.cutoff <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quick_start_files/figure-html/map_qc_plot-2.png" width="1344"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">seu.q</span><span class="op">$</span><span class="va">cell_subtype2</span> <span class="op">&lt;-</span> <span class="va">seu.q</span><span class="op">$</span><span class="va">cell_subtype</span></span>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seu.q</span><span class="op">$</span><span class="va">cell_subtype.orig</span> <span class="op">&lt;-</span> <span class="va">seu.q</span><span class="op">$</span><span class="va">cell_subtype</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/PlotProjection.html">PlotProjection</a></span><span class="op">(</span><span class="va">seu.q</span>, <span class="va">reference</span>, split.by <span class="op">=</span> <span class="st">"cell_subtype2"</span>, </span>
+<span><span class="fu"><a href="../reference/PlotProjection.html">PlotProjection</a></span><span class="op">(</span><span class="va">seu.q</span>, <span class="va">reference</span>, split.by <span class="op">=</span> <span class="st">"cell_subtype.orig"</span>, </span>
 <span>               ref.color.by <span class="op">=</span> <span class="st">"cell_subtype"</span>,</span>
 <span>               ref.size <span class="op">=</span> <span class="fl">.5</span>, ref.alpha <span class="op">=</span> <span class="fl">.3</span>, query.size <span class="op">=</span> <span class="fl">1</span>, </span>
 <span>               query.alpha <span class="op">=</span> <span class="fl">.5</span>, n.row <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
@@ -312,107 +365,102 @@
 <div class="section level3">
 <h3 id="label-transfer">Label transfer<a class="anchor" aria-label="anchor" href="#label-transfer"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seu.q</span> <span class="op">&lt;-</span> <span class="fu">ProjectSVR</span><span class="fu">::</span><span class="fu"><a href="../reference/LabelTransfer.html">LabelTransfer</a></span><span class="op">(</span><span class="va">seu.q</span>, <span class="va">reference</span>, ref.label.col <span class="op">=</span> <span class="st">"cell_subtype"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">seu.q</span>, reduction <span class="op">=</span> <span class="st">"ref.umap"</span>, group.by <span class="op">=</span> <span class="st">"knn.pred.celltype"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">reference</span><span class="op">$</span><span class="va">ref.cellmeta</span><span class="op">$</span><span class="va">colors</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quick_start_files/figure-html/label_transfer-1.png" width="864"></p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data.stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">seu.q</span><span class="op">$</span><span class="va">cell_subtype</span>, <span class="va">seu.q</span><span class="op">$</span><span class="va">knn.pred.celltype</span><span class="op">)</span></span>
 <span><span class="fu">pheatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pheatmap/man/pheatmap.html" class="external-link">pheatmap</a></span><span class="op">(</span><span class="va">data.stat</span>, display_numbers <span class="op">=</span> <span class="cn">T</span>, number_format <span class="op">=</span> <span class="st">"%.0f"</span>, </span>
 <span>                   number_color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quick_start_files/figure-html/compare_heatmap-1.png" width="768"></p>
 <details><summary><strong>Session Info</strong>
-</summary><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## R version 4.1.2 (2021-11-01)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
-<span><span class="co">## Running under: CentOS Linux 7 (Core)</span></span>
+<span><span class="co">## Running under: Ubuntu 22.04.2 LTS</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Matrix products: default</span></span>
-<span><span class="co">## BLAS:   /opt/R4.1/lib64/R/lib/libRblas.so</span></span>
-<span><span class="co">## LAPACK: /opt/R4.1/lib64/R/lib/libRlapack.so</span></span>
+<span><span class="co">## BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0</span></span>
+<span><span class="co">## LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## locale:</span></span>
-<span><span class="co">##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
-<span><span class="co">##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
-<span><span class="co">##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
-<span><span class="co">##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 </span></span>
-<span><span class="co">##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
-<span><span class="co">## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       </span></span>
+<span><span class="co">##  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
+<span><span class="co">##  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
+<span><span class="co">##  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
+<span><span class="co">## [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## attached base packages:</span></span>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">##  [1] forcats_0.5.2         stringr_1.4.1         dplyr_1.0.10         </span></span>
-<span><span class="co">##  [4] purrr_0.3.4           readr_2.1.2           tidyr_1.2.1          </span></span>
-<span><span class="co">##  [7] tibble_3.1.8          ggplot2_3.4.1         tidyverse_1.3.2      </span></span>
-<span><span class="co">## [10] sp_1.5-0              SeuratObject_4.1.2    Seurat_4.2.0         </span></span>
-<span><span class="co">## [13] ProjectSVR_0.1.0.9000</span></span>
+<span><span class="co">##  [1] lubridate_1.9.2    forcats_1.0.0      stringr_1.5.0      dplyr_1.1.3       </span></span>
+<span><span class="co">##  [5] purrr_1.0.2        readr_2.1.4        tidyr_1.3.0        tibble_3.2.1      </span></span>
+<span><span class="co">##  [9] ggplot2_3.4.3      tidyverse_2.0.0    SeuratObject_4.1.3 Seurat_4.3.0.1    </span></span>
+<span><span class="co">## [13] ProjectSVR_0.2.0  </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##   [1] utf8_1.2.2             reticulate_1.26        tidyselect_1.1.2      </span></span>
-<span><span class="co">##   [4] mlr3learners_0.5.4     htmlwidgets_1.5.4      BiocParallel_1.28.3   </span></span>
-<span><span class="co">##   [7] grid_4.1.2             Rtsne_0.16             mlr3misc_0.11.0       </span></span>
-<span><span class="co">##  [10] munsell_0.5.0          codetools_0.2-18       bbotk_0.5.4           </span></span>
-<span><span class="co">##  [13] ragg_1.2.2             ica_1.0-3              future_1.28.0         </span></span>
-<span><span class="co">##  [16] miniUI_0.1.1.1         mlr3verse_0.2.5        withr_2.5.0           </span></span>
-<span><span class="co">##  [19] spatstat.random_3.0-1  colorspace_2.0-3       progressr_0.11.0      </span></span>
-<span><span class="co">##  [22] highr_0.9              knitr_1.40             uuid_1.1-0            </span></span>
-<span><span class="co">##  [25] rstudioapi_0.14        stats4_4.1.2           ROCR_1.0-11           </span></span>
-<span><span class="co">##  [28] tensor_1.5             listenv_0.8.0          labeling_0.4.2        </span></span>
-<span><span class="co">##  [31] mlr3tuning_0.14.0      lgr_0.4.4              polyclip_1.10-0       </span></span>
-<span><span class="co">##  [34] pheatmap_1.0.12        farver_2.1.1           rprojroot_2.0.3       </span></span>
-<span><span class="co">##  [37] parallelly_1.32.1      vctrs_0.5.1            generics_0.1.3        </span></span>
-<span><span class="co">##  [40] clusterCrit_1.2.8      xfun_0.33              R6_2.5.1              </span></span>
-<span><span class="co">##  [43] doParallel_1.0.17      clue_0.3-61            isoband_0.2.5         </span></span>
-<span><span class="co">##  [46] spatstat.utils_3.0-1   cachem_1.0.6           assertthat_0.2.1      </span></span>
-<span><span class="co">##  [49] promises_1.2.0.1       scales_1.2.1           googlesheets4_1.0.1   </span></span>
-<span><span class="co">##  [52] rgeos_0.5-9            gtable_0.3.1           globals_0.16.1        </span></span>
-<span><span class="co">##  [55] goftest_1.2-3          rlang_1.0.6            systemfonts_1.0.4     </span></span>
-<span><span class="co">##  [58] GlobalOptions_0.1.2    splines_4.1.2          lazyeval_0.2.2        </span></span>
-<span><span class="co">##  [61] gargle_1.2.1           paradox_0.10.0         spatstat.geom_3.0-3   </span></span>
-<span><span class="co">##  [64] broom_1.0.1            checkmate_2.1.0        modelr_0.1.9          </span></span>
-<span><span class="co">##  [67] yaml_2.3.5             reshape2_1.4.4         abind_1.4-5           </span></span>
-<span><span class="co">##  [70] mlr3_0.14.0            backports_1.4.1        httpuv_1.6.6          </span></span>
-<span><span class="co">##  [73] tools_4.1.2            ellipsis_0.3.2         spatstat.core_2.4-4   </span></span>
+<span><span class="co">##   [1] utf8_1.2.3             spatstat.explore_3.2-3 reticulate_1.31       </span></span>
+<span><span class="co">##   [4] tidyselect_1.2.0       mlr3learners_0.5.6     htmlwidgets_1.6.2     </span></span>
+<span><span class="co">##   [7] BiocParallel_1.28.3    grid_4.1.2             Rtsne_0.16            </span></span>
+<span><span class="co">##  [10] mlr3misc_0.12.0        munsell_0.5.0          codetools_0.2-18      </span></span>
+<span><span class="co">##  [13] bbotk_0.7.2            ragg_1.2.5             ica_1.0-3             </span></span>
+<span><span class="co">##  [16] future_1.33.0          miniUI_0.1.1.1         mlr3verse_0.2.8       </span></span>
+<span><span class="co">##  [19] withr_2.5.0            spatstat.random_3.1-6  colorspace_2.1-0      </span></span>
+<span><span class="co">##  [22] progressr_0.14.0       highr_0.10             knitr_1.43            </span></span>
+<span><span class="co">##  [25] uuid_1.1-1             rstudioapi_0.15.0      stats4_4.1.2          </span></span>
+<span><span class="co">##  [28] ROCR_1.0-11            robustbase_0.99-0      tensor_1.5            </span></span>
+<span><span class="co">##  [31] listenv_0.9.0          labeling_0.4.3         mlr3tuning_0.19.0     </span></span>
+<span><span class="co">##  [34] polyclip_1.10-4        lgr_0.4.4              pheatmap_1.0.12       </span></span>
+<span><span class="co">##  [37] farver_2.1.1           rprojroot_2.0.3        parallelly_1.36.0     </span></span>
+<span><span class="co">##  [40] vctrs_0.6.3            generics_0.1.3         xfun_0.40             </span></span>
+<span><span class="co">##  [43] timechange_0.2.0       diptest_0.76-0         R6_2.5.1              </span></span>
+<span><span class="co">##  [46] doParallel_1.0.17      clue_0.3-64            isoband_0.2.7         </span></span>
+<span><span class="co">##  [49] flexmix_2.3-19         spatstat.utils_3.0-3   cachem_1.0.8          </span></span>
+<span><span class="co">##  [52] promises_1.2.1         scales_1.2.1           nnet_7.3-17           </span></span>
+<span><span class="co">##  [55] gtable_0.3.4           globals_0.16.2         goftest_1.2-3         </span></span>
+<span><span class="co">##  [58] mlr3hyperband_0.4.5    mlr3mbo_0.2.1          rlang_1.1.1           </span></span>
+<span><span class="co">##  [61] systemfonts_1.0.4      GlobalOptions_0.1.2    splines_4.1.2         </span></span>
+<span><span class="co">##  [64] lazyeval_0.2.2         paradox_0.11.1         spatstat.geom_3.2-5   </span></span>
+<span><span class="co">##  [67] checkmate_2.2.0        yaml_2.3.7             reshape2_1.4.4        </span></span>
+<span><span class="co">##  [70] abind_1.4-5            mlr3_0.16.1            backports_1.4.1       </span></span>
+<span><span class="co">##  [73] httpuv_1.6.11          tools_4.1.2            ellipsis_0.3.2        </span></span>
 <span><span class="co">##  [76] jquerylib_0.1.4        RColorBrewer_1.1-3     BiocGenerics_0.40.0   </span></span>
-<span><span class="co">##  [79] ggridges_0.5.3         Rcpp_1.0.9             plyr_1.8.7            </span></span>
-<span><span class="co">##  [82] rpart_4.1.16           deldir_1.0-6           pbapply_1.5-0         </span></span>
-<span><span class="co">##  [85] GetoptLong_1.0.5       cowplot_1.1.1          S4Vectors_0.32.4      </span></span>
-<span><span class="co">##  [88] zoo_1.8-11             haven_2.5.1            ggrepel_0.9.1         </span></span>
-<span><span class="co">##  [91] cluster_2.1.4          here_1.0.1             fs_1.5.2              </span></span>
-<span><span class="co">##  [94] magrittr_2.0.3         data.table_1.14.2      scattermore_0.8       </span></span>
-<span><span class="co">##  [97] circlize_0.4.15        reprex_2.0.2           lmtest_0.9-40         </span></span>
-<span><span class="co">## [100] RANN_2.6.1             googledrive_2.0.0      fitdistrplus_1.1-8    </span></span>
-<span><span class="co">## [103] matrixStats_0.62.0     hms_1.1.2              patchwork_1.1.2       </span></span>
-<span><span class="co">## [106] mime_0.12              evaluate_0.16          xtable_1.8-4          </span></span>
-<span><span class="co">## [109] readxl_1.4.1           IRanges_2.28.0         gridExtra_2.3         </span></span>
-<span><span class="co">## [112] shape_1.4.6            UCell_1.3.1            compiler_4.1.2        </span></span>
-<span><span class="co">## [115] mlr3cluster_0.1.4      KernSmooth_2.23-20     crayon_1.5.1          </span></span>
-<span><span class="co">## [118] htmltools_0.5.3        tzdb_0.3.0             mgcv_1.8-40           </span></span>
-<span><span class="co">## [121] later_1.3.0            lubridate_1.8.0        DBI_1.1.3             </span></span>
-<span><span class="co">## [124] dbplyr_2.2.1           ComplexHeatmap_2.10.0  rappdirs_0.3.3        </span></span>
-<span><span class="co">## [127] MASS_7.3-58.1          mlr3data_0.6.1         Matrix_1.5-1          </span></span>
-<span><span class="co">## [130] cli_3.4.1              parallel_4.1.2         igraph_1.3.5          </span></span>
-<span><span class="co">## [133] pkgconfig_2.0.3        pkgdown_2.0.6          plotly_4.10.0         </span></span>
-<span><span class="co">## [136] spatstat.sparse_3.0-0  xml2_1.3.3             foreach_1.5.2         </span></span>
-<span><span class="co">## [139] bslib_0.4.0            mlr3fselect_0.7.2      rvest_1.0.3           </span></span>
-<span><span class="co">## [142] digest_0.6.29          sctransform_0.3.5      RcppAnnoy_0.0.19      </span></span>
-<span><span class="co">## [145] mlr3filters_0.6.0      spatstat.data_3.0-0    cellranger_1.1.0      </span></span>
-<span><span class="co">## [148] rmarkdown_2.16         leiden_0.4.3           uwot_0.1.14           </span></span>
-<span><span class="co">## [151] curl_5.0.1             shiny_1.7.2            rjson_0.2.21          </span></span>
-<span><span class="co">## [154] lifecycle_1.0.3        nlme_3.1-155           jsonlite_1.8.0        </span></span>
-<span><span class="co">## [157] mlr3tuningspaces_0.3.0 desc_1.4.2             viridisLite_0.4.1     </span></span>
-<span><span class="co">## [160] fansi_1.0.3            pillar_1.8.1           ggsci_2.9             </span></span>
-<span><span class="co">## [163] lattice_0.20-45        fastmap_1.1.0          httr_1.4.4            </span></span>
-<span><span class="co">## [166] survival_3.4-0         glue_1.6.2             mlr3viz_0.5.10        </span></span>
-<span><span class="co">## [169] png_0.1-7              iterators_1.0.14       stringi_1.7.6         </span></span>
-<span><span class="co">## [172] sass_0.4.2             mlr3pipelines_0.4.2    palmerpenguins_0.1.1  </span></span>
-<span><span class="co">## [175] textshaping_0.3.6      memoise_2.0.1          irlba_2.3.5           </span></span>
-<span><span class="co">## [178] future.apply_1.9.1</span></span></code></pre>
+<span><span class="co">##  [79] ggridges_0.5.4         Rcpp_1.0.11            plyr_1.8.8            </span></span>
+<span><span class="co">##  [82] deldir_1.0-9           pbapply_1.7-2          GetoptLong_1.0.5      </span></span>
+<span><span class="co">##  [85] cowplot_1.1.1          S4Vectors_0.32.4       zoo_1.8-12            </span></span>
+<span><span class="co">##  [88] ggrepel_0.9.3          cluster_2.1.2          here_1.0.1            </span></span>
+<span><span class="co">##  [91] fs_1.6.3               magrittr_2.0.3         data.table_1.14.8     </span></span>
+<span><span class="co">##  [94] scattermore_1.2        circlize_0.4.15        lmtest_0.9-40         </span></span>
+<span><span class="co">##  [97] RANN_2.6.1             fitdistrplus_1.1-11    matrixStats_1.0.0     </span></span>
+<span><span class="co">## [100] hms_1.1.3              patchwork_1.1.3        mime_0.12             </span></span>
+<span><span class="co">## [103] evaluate_0.21          xtable_1.8-4           mclust_6.0.0          </span></span>
+<span><span class="co">## [106] IRanges_2.28.0         gridExtra_2.3          shape_1.4.6           </span></span>
+<span><span class="co">## [109] UCell_1.3.1            compiler_4.1.2         mlr3cluster_0.1.8     </span></span>
+<span><span class="co">## [112] KernSmooth_2.23-20     crayon_1.5.2           htmltools_0.5.6       </span></span>
+<span><span class="co">## [115] tzdb_0.4.0             later_1.3.1            ComplexHeatmap_2.10.0 </span></span>
+<span><span class="co">## [118] rappdirs_0.3.3         MASS_7.3-55            fpc_2.2-10            </span></span>
+<span><span class="co">## [121] mlr3data_0.7.0         Matrix_1.6-1           cli_3.6.1             </span></span>
+<span><span class="co">## [124] parallel_4.1.2         igraph_1.5.1           pkgconfig_2.0.3       </span></span>
+<span><span class="co">## [127] pkgdown_2.0.7          sp_2.0-0               plotly_4.10.2         </span></span>
+<span><span class="co">## [130] spatstat.sparse_3.0-2  foreach_1.5.2          bslib_0.5.1           </span></span>
+<span><span class="co">## [133] mlr3fselect_0.11.0     digest_0.6.33          sctransform_0.3.5     </span></span>
+<span><span class="co">## [136] RcppAnnoy_0.0.21       mlr3filters_0.7.1      spatstat.data_3.0-1   </span></span>
+<span><span class="co">## [139] rmarkdown_2.24         leiden_0.4.3           uwot_0.1.16           </span></span>
+<span><span class="co">## [142] kernlab_0.9-32         shiny_1.7.5            modeltools_0.2-23     </span></span>
+<span><span class="co">## [145] rjson_0.2.21           nlme_3.1-155           lifecycle_1.0.3       </span></span>
+<span><span class="co">## [148] jsonlite_1.8.7         mlr3tuningspaces_0.4.0 desc_1.4.2            </span></span>
+<span><span class="co">## [151] viridisLite_0.4.2      fansi_1.0.4            pillar_1.9.0          </span></span>
+<span><span class="co">## [154] ggsci_3.0.0            lattice_0.20-45        fastmap_1.1.1         </span></span>
+<span><span class="co">## [157] httr_1.4.7             DEoptimR_1.1-2         survival_3.2-13       </span></span>
+<span><span class="co">## [160] glue_1.6.2             mlr3viz_0.6.1          png_0.1-8             </span></span>
+<span><span class="co">## [163] prabclus_2.3-2         iterators_1.0.14       spacefillr_0.3.2      </span></span>
+<span><span class="co">## [166] class_7.3-20           stringi_1.7.12         sass_0.4.7            </span></span>
+<span><span class="co">## [169] mlr3pipelines_0.5.0-1  palmerpenguins_0.1.1   textshaping_0.3.6     </span></span>
+<span><span class="co">## [172] memoise_2.0.1          irlba_2.3.5.1          future.apply_1.11.0</span></span></code></pre>
 </details>
 </div>
 </div>
@@ -435,7 +483,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

@@ -101,44 +101,12 @@ We validated this by checking the pan somatic marker `Vim` and pan germ cell mar
 
 This observation remind us that we should double check the label transfer results.
 
-```{r, fig.width=8, fig.height=4}
+```{r pan_markers_plot, fig.width=8, fig.height=4}
 DefaultAssay(seu.q) <- "RNA"
 seu.q[["RNA"]]@counts <- seu.q[["RNA"]]@data
 seu.q <- NormalizeData(seu.q)
 FeaturePlot(seu.q, reduction = "ref.umap", features = c("Vim", "Ddx4"), pt.size = .5)
 ```
-
-I am quite curious about the identity of m9. So I calculated the m9 specific expressed genes.
-
-```{r, fig.width=8, fig.height=4}
-Idents(seu.q) <- seu.q$knn.pred.celltype.major_votes
-seu.q.ds <- subset(seu.q, downsample = 200)
-m9.markers <- FindMarkers(seu.q.ds, ident.1 = "m9-PGC_Piwil4_arrest", only.pos = T)
-head(m9.markers, n = 10)
-FeaturePlot(seu.q, reduction = "ref.umap", features = c("Foxi3", "Prr23a1"), pt.size = .5)
-```
-
-We found:
-
-1. The "m9" markers are not correlated to any cell type in the testicular cell atlas. 
-
-2. The "m9" do not exist in day0 group.
-
-These suggest that "m9" may be a novel cell type induced by NRRA in vitro.
-
-```{r}
-# devtools::install_github("JarningGau/scutilsR")
-library(scutilsR)
-data("mca_mmu")
-data("hcl_mmu")
-t2g <- rbind(mca_mmu, hcl_mmu)
-
-genes <- subset(m9.markers, p_val_adj < 1e-6 & avg_log2FC > 1) %>% rownames()
-e.res <- clusterProfiler::enricher(genes, TERM2GENE = t2g)
-head(e.res@result)
-```
-
-According to the enriched terms of cell markers, the m9 may be a type of endothelial cells.
 
 ### Alluvia plot
 
@@ -153,12 +121,11 @@ AlluviaPlot(cellmeta, by = "day",
             bar.width = .5, legend.ncol = 1)
 ```
 
-We found 4~5% germ cells entering meiosis after 3 days treatment by NRRA.
-
+We found 4~5% germ cells entering meiosis after 3 days of treatment by NRRA.
 
 <details>
 <summary>**Session Info**</summary>
-```{r}
+```{r sessions}
 sessionInfo()
 ```
 </details>

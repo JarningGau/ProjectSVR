@@ -166,9 +166,13 @@ RunCNMF(counts.fn = file.path(OUTPATH, "mTCA.metacells.h5ad"),
 
 Here, we try the [AUCell](https://bioconductor.org/packages/release/bioc/html/AUCell.html) method for calculating signature scores.
 
-```{r add_gene_module_score, eval=FALSE}
+```{r load_signatures}
 top.genes <- read.table(file.path(OUTPATH, "K70/top100_genes.k_70.dt_0_2.txt"), header = T)
 names(top.genes) <- paste0("feature.", 1:length(top.genes))
+```
+
+
+```{r add_gene_module_score, eval=FALSE}
 seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "AUCell", cores = 5)
 # The signature score matrix is stored in 'SignatureScore' assay
 Assays(seu.ref)

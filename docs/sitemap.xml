@@ -16,13 +16,40 @@
     <loc>jarninggau.github.io/ProjectSVR/LOG.html</loc>
   </url>
   <url>
-    <loc>jarninggau.github.io/ProjectSVR/articles/ICB_breast_cancer.html</loc>
-  </url>
-  <url>
     <loc>jarninggau.github.io/ProjectSVR/articles/index.html</loc>
   </url>
   <url>
-    <loc>jarninggau.github.io/ProjectSVR/articles/perturbed_germ_cells.html</loc>
+    <loc>jarninggau.github.io/ProjectSVR/articles/mapQuery_ICB_BRCA.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/mapQuery_Ythdc2-KO.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/mapQuery_Zfp541-KO.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/mapQuery_immune_RPL.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/mapQuery_invitro_meiosis.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/misc_Ythdc2-KO_pseudotime.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/misc_disco_pbmc_svm.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/model_mfia.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/model_mtca.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/model_pbmc.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/articles/model_pctl.html</loc>
   </url>
   <url>
     <loc>jarninggau.github.io/ProjectSVR/articles/quick_start.html</loc>
@@ -56,6 +83,9 @@
   </url>
   <url>
     <loc>jarninggau.github.io/ProjectSVR/reference/CreateModelObject.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/reference/CreateReference.html</loc>
   </url>
   <url>
     <loc>jarninggau.github.io/ProjectSVR/reference/DimTheme.html</loc>
@@ -140,6 +170,9 @@
   </url>
   <url>
     <loc>jarninggau.github.io/ProjectSVR/reference/newCellProject.html</loc>
+  </url>
+  <url>
+    <loc>jarninggau.github.io/ProjectSVR/reference/pals.html</loc>
   </url>
   <url>
     <loc>jarninggau.github.io/ProjectSVR/reference/plot.GridDensity.html</loc>
