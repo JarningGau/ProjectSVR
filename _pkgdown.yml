@@ -15,12 +15,37 @@ navbar:
     tutorials:
       text: Tutorials
       menu:
+      - text: Generic example
       - text: Quick start
         href: articles/quick_start.html
-      - text: Pan-cancer T cell landscape
-        href: articles/ICB_breast_cancer.html
+      - text: ------------
+      - text: Build reference model
+      - text: DISCO blood atlas
+        href: articles/model_pbmc.html
+      - text: Maternal-fetal interface atlas
+        href: articles/model_mfia.html
+      - text: Pan-cancer T cell lanscape
+        href: articles/model_pctl.html
       - text: Mouse testicular cell atlas
-        href: articles/mTCA_perturbed_germ_cells.html
+        href: articles/model_mtca.html
+      - text: ------------
+      - text: Map query dataset
+      - text: Decidual immune microenvironment of RPL patients
+        href: articles/mapQuery_immune_RPL.html
+      - text: ICB responsiveness of BRCA
+        href: articles/mapQuery_ICB_BRCA.html
+      - text: Genetic perturbed germ cells (Zfp541-KO)
+        href: articles/mapQuery_Zfp541-KO.html
+      - text: Genetic perturbed germ cells (Ythdc2-KO)
+        href: articles/mapQuery_Ythdc2-KO.html
+      - text: In vitro induced meiosis
+        href: articles/mapQuery_invitro_meiosis.html
+      - text: ------------
+      - text: MISC
+      - text: Training the reference pseudotime model
+        href: articles/misc_Ythdc2-KO_pseudotime.html
+      - text: Training the SVM model for cell type prediction
+        href: articles/misc_disco_pbmc_svm.html
 
 reference:
 - title: "Class"

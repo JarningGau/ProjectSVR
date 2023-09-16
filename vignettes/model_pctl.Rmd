@@ -1,0 +1,230 @@
+---
+title: "Build reference model for pan cancer T cell lanscape"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  # tidy = TRUE,
+  # tidy.opts = list(width.cutoff = 95),
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+In this tutorial, we showed how to build reference model for a tumor infiltrated pan-cancer T cell atlas [<sup>1</sup>](#refer-anchor-1).
+
+## Download Related Dataset
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+options(timeout = max(3600, getOption("timeout")))
+```
+
+```{r download_dataset, eval=FALSE}
+if (!dir.exists("reference")) dir.create("reference")
+
+download.file(url = "https://zenodo.org/record/8350746/files/ZhengLiangtao.CD4.seurat.slim.qs", 
+              destfile = "reference/ZhengLiangtao.CD4.seurat.slim.qs")
+
+download.file(url = "https://zenodo.org/record/8350746/files/ZhengLiangtao.CD8.seurat.slim.qs", 
+              destfile = "reference/ZhengLiangtao.CD8.seurat.slim.qs")
+```
+
+## Reference Model for Pan-cancer CD4 T Cell Landscape
+
+The original paper [<sup>1</sup>](#refer-anchor-1) adopted a "metacell-like" strategy for data integration. We mapped the coordinates of metacells in UMAP space to single cells and trained supported vector regression (SVR) model on them.
+
+```{r referenc_plot, fig.width=8, fig.height=4}
+data("pals")
+seu.ref <- qs::qread("reference/ZhengLiangtao.CD4.seurat.slim.qs")
+
+data.plot <- seu.ref@misc$data.refplot$meta.data
+
+text.pos <- data.frame(
+  x = c(-4.5, 4, 3.5,  2, -4.5, -7, -6),
+  y = c(  5,  4, -4,  -6, -6,   -2,  2),
+  label = c("Tn", "Treg", "Tfh", "Tfh/Th1", "Temra", "Tem", "Tm")
+)
+
+## meta cell reference
+ggplot(data.plot, aes(UMAP_1, UMAP_2, color = cluster.name), pt.size = .4) + 
+  geom_point(size = .3) + 
+  ggtitle("Pan-cancer CD4 T cell") + 
+  scale_color_manual(values = pals$`pan-cancer_cd4t`) +
+  geom_text(inherit.aes = F, data = text.pos, mapping = aes(x, y, label = label), size = 4) + 
+  guides(color = guide_legend(override.aes = list(size = 2))) + 
+  coord_equal(ratio = 1) + 
+  theme(legend.text = element_text(size = 7),
+        plot.title = element_text(hjust = .5))
+```
+
+### Transfer raw count matrix to gene set score matrix
+
+We utilized the author defined markers stored in `seu.ref@misc$markers` as features to calculate the gene set scores. These markers were ordered by significance. We extracted the top 20 most significant genes for each cell state.
+
+```{r add_gene_module_score, fig.width=8, fig.height=4}
+top.genes <- seu.ref@misc$markers
+top.genes <- lapply(top.genes, function(xx) head(xx, 20))
+sapply(top.genes, length)
+
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "UCell", cores = 5)
+
+# The signature score matrix is stored in 'SignatureScore' assay
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+FeaturePlot(seu.ref, features = c("CD4.c12", "CD4.c16"), pt.size = 3)
+```
+
+### Training reference model
+
+```{r train_model}
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
+batch.size = 8000 # number of subsampled cells for each SVR model 
+n.models = 20      # number of SVR models trained
+umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
+                             emb.mat = embeddings.df,
+                             batch.size = batch.size,
+                             n.models = n.models,
+                             cores = 10)
+```
+
+### Create reference object
+
+1. meta.data: metacell meta data (embeddings & cell type information)
+
+2. gss.method: method used in `ComputeModuleScore()`
+
+3. [optional] colors: for plots
+
+4. [optional] text.pos: text annotation on the reference plots
+
+```{r create_reference}
+meta.data <- seu.ref@misc$data.refplot$meta.data
+colors <- pals$`pan-cancer_cd4t`
+bg.genes <- rownames(seu.ref[["RNA"]])
+
+reference <- CreateReference(umap.model = umap.model, 
+                             gene.sets = top.genes, 
+                             bg.genes = bg.genes,
+                             meta.data = meta.data, 
+                             gss.method = "UCell",
+                             colors = colors, 
+                             text.pos = text.pos)
+
+dir.create("models")
+saveRDS(reference, "models/model.Zheng2021.CD4Tcell.rds")
+```
+
+## Reference Model for Pan-cancer CD8 T Cell Landscape
+
+```{r referenc_plot2, fig.width=6, fig.height=5}
+data("pals")
+seu.ref <- qs::qread("reference/ZhengLiangtao.CD8.seurat.slim.qs")
+gc()
+
+data.plot <- seu.ref@misc$data.refplot$meta.data
+
+text.pos <- data.frame(
+  x = c(-6, -5, 2, 6,  3, -5, -4.5, 0),
+  y = c( 1,  7, 6, 5, -7, -5, -1  , 0),
+  label = c("ISG+", "Tex", "KIR+ NK-like", "Temra", "Tn", "Tc17", "Trm", "Tem")
+)
+
+## meta cell reference
+ggplot(data.plot, aes(UMAP_1, UMAP_2, color = cluster.name), pt.size = .4) + 
+  geom_point(size = .3) + 
+  ggtitle("Pan-cancer CD8 T cell") + 
+  scale_color_manual(values = pals$`pan-cancer_cd8t`) +
+  geom_text(inherit.aes = F, data = text.pos, mapping = aes(x, y, label = label), size = 4) + 
+  guides(color = guide_legend(override.aes = list(size = 2), ncol = 1)) + 
+  coord_equal(ratio = 1) + 
+  theme(legend.text = element_text(size = 7),
+        plot.title = element_text(hjust = .5))
+```
+
+### Transfer raw count matrix to gene set score matrix
+
+```{r add_gene_module_score2, fig.width=8, fig.height=4}
+top.genes <- seu.ref@misc$markers
+top.genes <- lapply(top.genes, function(xx) head(xx, 20))
+sapply(top.genes, length)
+
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "UCell", cores = 5)
+
+# The signature score matrix is stored in 'SignatureScore' assay
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+FeaturePlot(seu.ref, features = c("CD8.c12", "CD8.c16"), pt.size = 3)
+```
+
+### Training reference model
+
+```{r train_model2}
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
+batch.size = 8000 # number of subsampled cells for each SVR model 
+n.models = 20      # number of SVR models trained
+umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
+                             emb.mat = embeddings.df,
+                             batch.size = batch.size,
+                             n.models = n.models,
+                             cores = 10)
+```
+
+### Create reference object
+
+```{r create_reference2}
+meta.data <- seu.ref@misc$data.refplot$meta.data
+colors <- pals$`pan-cancer_cd8t`
+bg.genes <- rownames(seu.ref[["RNA"]])
+
+reference <- CreateReference(umap.model = umap.model, 
+                             gene.sets = top.genes, 
+                             bg.genes = bg.genes,
+                             meta.data = meta.data, 
+                             gss.method = "UCell",
+                             colors = colors, 
+                             text.pos = text.pos)
+
+dir.create("models")
+saveRDS(reference, "models/model.Zheng2021.CD8Tcell.rds")
+```
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+## References
+
+<div id="refer-anchor-1"></div>
+- [1] [Zheng L, et al. Pan-cancer single-cell landscape of tumor-infiltrating T cells. Science. 2021 Dec 17;374(6574):abe6474. doi: 10.1126/science.abe6474. Epub 2021 Dec 17. PMID: 34914499.](https://pubmed.ncbi.nlm.nih.gov/34914499/)
+
+

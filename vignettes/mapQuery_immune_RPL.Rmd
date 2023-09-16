@@ -1,0 +1,140 @@
+---
+title: "Interpretation of the decidual immune microenvironment in RPL patients"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+In this tutorial, we utilized `ProjetSVR` to project decidual immune cells from both healthy individuals and patients with recurrent pregnancy loss (RPL) [<sup>1</sup>](#refer-anchor-1) onto a previously reported human maternal-fetal interface atlas [<sup>2</sup>](#refer-anchor-2).
+
+## Download Reference Models and Query Data
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+
+options(timeout = max(3600, getOption("timeout")))
+```
+
+```{r download_dataset, eval=FALSE}
+# reference model
+if (!dir.exists("models")) dir.create("models")
+download.file(url = "https://zenodo.org/record/8350732/files/model.Vento2018.MFI.rds", 
+              destfile = "models/model.Vento2018.MFI.rds")
+# query data
+if (!dir.exists("query")) dir.create("query")
+download.file(url = "https://zenodo.org/record/8350748/files/Guo2021.MFI.seurat.slim.qs", 
+              destfile = "query/Guo2021.MFI.seurat.slim.qs")
+```
+
+## Map Query to Reference
+
+### Reference mapping
+
+```{r reference_mapping, fig.width=4, fig.height=3}
+reference <- readRDS("models/model.Vento2018.MFI.rds")
+seu.q <- qs::qread("query/Guo2021.MFI.seurat.slim.qs")
+
+seu.q$sample_id <- seu.q$orig.ident
+seu.q$group <- factor(sub("[0-9]", "", seu.q$orig.ident), levels = c("Ctrl", "RPL"))
+
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, add.map.qual = T, ncores = 10)
+
+DimPlot(seu.q, reduction = "ref.umap", group.by = "sample_id", pt.size = .1)
+```
+
+### Maping quality
+
+```{r map_quality, fig.width=14, fig.height=4}
+## cutoff by adjusted p value
+MapQCPlot(seu.q, map.q.cutoff = 2)
+```
+
+Visualize the projected query cells onto the reference atlas.
+
+```{r projection_plot, fig.width=12, fig.height=5}
+PlotProjection(seu.q, reference, split.by = "group", ref.color.by = "cell_type", 
+               ref.size = .5, ref.alpha = .3, query.size = 1, query.alpha = .5, 
+               n.row = 1, legend.ncol = 2)
+```
+
+### Label transfer
+
+```{r label_transfer, fig.width=10, fig.height=4}
+seu.q <- subset(seu.q, mean.knn.dist < 2)
+seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cell_type")
+
+DimPlot(seu.q, group.by = "knn.pred.celltype", split.by = "group") + 
+  scale_color_manual(values = reference$ref.cellmeta$colors)
+```
+
+When we focus on the dNK population, we found that the dNK cells in RPL were shifted to dNK3 population, as reported in the original paper [<sup>1</sup>](#refer-anchor-1).
+
+```{r projection_plot_dNK, fig.width=12, fig.height=5}
+seu.q.dNK <- subset(seu.q, knn.pred.celltype %in% c("dNK p", "dNK1", "dNK2", "dNK3") )
+
+PlotProjection(seu.q.dNK, reference, split.by = "group", ref.color.by = "cell_type", 
+               ref.size = .5, ref.alpha = .3, query.size = .1, query.alpha = .1, 
+               n.row = 1, legend.ncol = 2)
+```
+
+### Alluvia plot
+
+```{r alluvia_plot, fig.width=4, fig.height=3}
+AlluviaPlot(seu.q.dNK@meta.data, by = "group", 
+            fill = "knn.pred.celltype",
+            bar.width = .5, legend.ncol = 1)
+```
+
+### Compare the predicted labels vs the mannually annotated labels
+
+```{r compare_heatmap, fig.width=10, fig.height=5}
+data.stat <- table(seu.q$cell_type, seu.q$knn.pred.celltype)
+data.stat <- data.stat[, colSums(data.stat) > 0]
+
+pheatmap::pheatmap(data.stat, display_numbers = T, number_format = "%.0f", 
+                   cluster_rows = F, cluster_cols = F, number_color = "black")
+```
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+
+## References
+
+<div id="refer-anchor-1"></div>
+- [1] [Guo C, et al. Single-cell profiling of the human decidual immune microenvironment in patients with recurrent pregnancy loss. Cell Discov. 2021 Jan 4;7(1):1. doi: 10.1038/s41421-020-00236-z. PMID: 33390590.](https://pubmed.ncbi.nlm.nih.gov/33390590/)
+
+<div id="refer-anchor-2"></div>
+- [2] [Vento-Tormo R, et al. Single-cell reconstruction of the early maternal-fetal interface in humans. Nature. 2018 Nov;563(7731):347-353. doi: 10.1038/s41586-018-0698-6. Epub 2018 Nov 14. PMID: 30429548.](https://pubmed.ncbi.nlm.nih.gov/30429548/)
+

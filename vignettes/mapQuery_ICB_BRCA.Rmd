@@ -47,86 +47,14 @@ options(timeout = max(3600, getOption("timeout")))
 ```
 
 ```{r download_dataset, eval=FALSE}
-# reference data
-# We provide reference in qs format for quicklyu saving and readling objects to and from disk.
-# https://cran.r-project.org/web/packages/qs/vignettes/vignette.html
-download.file(url = "", destfile = "ZhengLiangtao.CD8.seurat.qs")
+# reference model
+if (!dir.exists("models")) dir.create("models")
+download.file(url = "https://zenodo.org/record/8350732/files/model.Zheng2021.CD8Tcell.rds", 
+              destfile = "models/model.Zheng2021.CD8Tcell.rds")
 # query data
-download.file(url = "", destfile = "ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds")
-```
-
-## Build Reference Model
-
-Load reference dataset. See also [<sup>2</sup>](#refer-anchor-2).
-
-```{r referenc_plot, fig.width=7, fig.height=5}
-seu.ref <- qs::qread("ZhengLiangtao.CD8.seurat.qs")
-
-data.plot <- seu.ref@misc$data.refplot$meta.data
-
-ggplot(data.plot, aes(UMAP_1, UMAP_2, color = cluster.name), pt.size = .4) + 
-  geom_point(size = .3) + 
-  scale_color_manual(values = seu.ref@misc$data.refplot$colors) +
-  geom_text(inherit.aes = F, data = seu.ref@misc$data.refplot$text.pos,
-            mapping = aes(x, y, label = label), size = 4) + 
-  guides(color = guide_legend(override.aes = list(size = 2))) + 
-  coord_equal(ratio = 1)
-```
-### Transfer raw count matrix to gene set score matrix
-
-```{r add_gene_module_score, fig.width=8, fig.height=4}
-top.genes <- seu.ref@misc$markers
-top.genes <- lapply(top.genes, function(xx) head(xx, 20))
-sapply(top.genes, length)
-
-seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "UCell", cores = 20)
-
-# The signature score matrix is stored in 'SignatureScore' assay
-Assays(seu.ref)
-DefaultAssay(seu.ref) <- "SignatureScore"
-FeaturePlot(seu.ref, features = c("CD8.c12", "CD8.c16"), pt.size = 1)
-```
-
-### Training reference model
-
-```{r train_model}
-gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
-embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
-batch.size = 8000 # number of subsampled cells for each SVR model 
-n.models = 10      # number of SVR models trained
-umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
-                             emb.mat = embeddings.df,
-                             batch.size = batch.size,
-                             n.models = n.models,
-                             cores = 10)
-```
-
-### Save the reference model
-
-ref.cellmeta stores:
-
-1. [optional] colors: for plots
-
-2. [optional] text.pos: text annotation on the reference plots
-
-3. meta.data: cell meta data (embeddings + cell type information)
-
-```{r save_models}
-ref.cellmeta <- seu.ref@misc$data.refplot
-bg.genes <- rownames(seu.ref[["RNA"]])
-
-reference <- list(
-  "models" = list(
-    "umap" = umap.model
-  ),
-  "genes" = list(
-    "gene.sets" = top.genes, # list
-    "bg.genes" = bg.genes # vector
-  ),
-  "ref.cellmeta" = ref.cellmeta # list for reference plot
-)
-
-saveRDS(reference, "model.Zheng.CD8Tcell.rds")
+if (!dir.exists("query")) dir.create("query")
+download.file(url = "https://zenodo.org/record/8350748/files/ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds", 
+              destfile = "query/ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds")
 ```
 
 ## Map Query to Reference
@@ -134,8 +62,9 @@ saveRDS(reference, "model.Zheng.CD8Tcell.rds")
 ### Reference mapping
 
 ```{r reference_mapping, fig.width=12, fig.height=5}
-reference <- readRDS("model.Zheng.CD8Tcell.rds")
-seu.q <- readRDS("ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds")
+reference <- readRDS("models/model.Zheng2021.CD8Tcell.rds")
+seu.q <- readRDS("query/ICB_BRCA.1864-counts_cd8tcell_cohort1.seurat.rds")
+
 annotations <- c(
   "E" = "Responders",
   "n/a" = "n/a",
@@ -156,14 +85,6 @@ p1 + p2
 
 Determine the threshold to distinguish the good and bad projections.
 
-```{r map_qc_threshold, fig.width=5, fig.height=3}
-data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
-
-ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
-  geom_point(size = .3) + 
-  geom_vline(xintercept = 1.6, linetype = "dashed", color = "blue")
-```
-
 QC plot for the reference mapping.
 
 ```{r map_qc_plot, fig.width=14, fig.height=4}
@@ -182,7 +103,7 @@ PlotProjection(seu.q, reference, split.by = "cellSubType", ref.color.by = "clust
 
 ### Label transfer
 
-```{r label_transfer}
+```{r label_transfer, fig.width=10, fig.height=4}
 seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cluster.name")
 ```
 
@@ -214,6 +135,16 @@ GroupPreferencePlot(seu.q@meta.data, group.by = "group",
                     column_names_rot = 0, column_names_centered = TRUE)
 ```
 
+If `seu.q$knn.pred.celltype` was not a factor, then rows were ordered by o/e value.
+
+```{r preference_plot2, fig.width=6, fig.height=5}
+meta.data <- seu.q@meta.data
+meta.data$knn.pred.celltype <- as.character(meta.data$knn.pred.celltype)
+GroupPreferencePlot(meta.data, group.by = "group", 
+                    preference.on = "knn.pred.celltype", 
+                    column_names_rot = 0, column_names_centered = TRUE)
+```
+
 ### Wilcoxon test
 
 ```{r wilcoxon_test, fig.width=5, fig.height=4}
@@ -226,6 +157,8 @@ da.test <- AbundanceTest(cellmeta = seu.q@meta.data,
 VolcanoPlot(da.test, xlab = "log2(R / NR)", ylab = "Frequency",
             colors = reference$ref.cellmeta$colors)
 ```
+
+Focus on the detailed information via `BoxPlot()`.
 
 ```{r box_plot, fig.width=6, fig.height=5}
 ## Box plot

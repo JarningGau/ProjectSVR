@@ -41,17 +41,18 @@ options(timeout = max(3600, getOption("timeout")))
 ```
 
 ```{r download_dataset, eval=FALSE}
+if (!dir.exists("quickstart")) dir.create("quickstart")
 # reference data
-download.file(url = "https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds", destfile = "disco_pbmc_small.seurat.slim.rds")
+download.file(url = "https://zenodo.org/record/8147304/files/disco_pbmc_small.seurat.slim.rds", destfile = "quickstart/disco_pbmc_small.seurat.slim.rds")
 # query data
-download.file(url = "https://zenodo.org/record/8147304/files/query_pbmc_small.seurat.slim.rds", destfile = "query_pbmc_small.seurat.slim.rds")
+download.file(url = "https://zenodo.org/record/8147304/files/query_pbmc_small.seurat.slim.rds", destfile = "quickstart/query_pbmc_small.seurat.slim.rds")
 ```
 
 
 ## Build Reference Model
 
 ```{r load_reference, fig.width=9, fig.height=5}
-seu.ref <- readRDS("disco_pbmc_small.seurat.slim.rds")
+seu.ref <- readRDS("quickstart/disco_pbmc_small.seurat.slim.rds")
 
 DimPlot(seu.ref, pt.size = .4) +
   scale_color_manual(values = seu.ref@misc$data.refplot$colors) +
@@ -114,8 +115,6 @@ umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
 
 ### Save the reference model
 
-ref.cellmeta stores:
-
 1. [optional] colors: for plots
 
 2. [optional] text.pos: text annotation on the reference plots
@@ -123,21 +122,20 @@ ref.cellmeta stores:
 3. meta.data: cell meta data (embeddings + cell type information)
 
 ```{r save_model}
-ref.cellmeta <- seu.ref@misc$data.refplot
-ref.cellmeta$meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "cell_type", "cell_subtype"))
+colors <- seu.ref@misc$data.refplot$colors
+text.pos <- seu.ref@misc$data.refplot$text.pos
+meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "cell_type", "cell_subtype"))
 
-reference <- list(
-  "models" = list(
-    "umap" = umap.model
-  ),
-  "genes" = list(
-    "gene.sets" = top.genes, # list
-    "bg.genes" = bg.genes # vector
-  ),
-  "ref.cellmeta" = ref.cellmeta # list for reference plot
-)
+reference <- CreateReference(umap.model = umap.model, # fitted SVR model
+                             gene.sets = top.genes, # signatures for calculating gene set score
+                             bg.genes = bg.genes,   # background genes for calculating gene set score
+                             meta.data = meta.data, # cell meta data of reference atlas
+                             gss.method = "UCell",  # algorithm for calculation of gene set score
+                             colors = colors,       # colors map to cell type
+                             text.pos = text.pos)   # text annotation on projection plot
+class(reference) # return a reference model
 
-saveRDS(reference, "model.disco_pbmc_quickstart.rds")
+saveRDS(reference, "quickstart/model.disco_pbmc_quickstart.rds")
 ```
 
 ## Map Query to Reference
@@ -145,11 +143,10 @@ saveRDS(reference, "model.disco_pbmc_quickstart.rds")
 ### Reference mapping
 
 ```{r reference_mapping, fig.width=12, fig.height=5}
-reference <- readRDS("model.disco_pbmc_quickstart.rds")
-seu.q <- readRDS("query_pbmc_small.seurat.slim.rds")
+reference <- readRDS("quickstart/model.disco_pbmc_quickstart.rds")
+seu.q <- readRDS("quickstart/query_pbmc_small.seurat.slim.rds")
 seu.q[["RNA"]]@counts <- seu.q[["RNA"]]@data
-seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, 
-                              add.map.qual = T, ncores = 5)
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, add.map.qual = T, ncores = 5)
 
 p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "donor")
 p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "cell_subtype", 
@@ -182,9 +179,9 @@ MapQCPlot(seu.q, map.q.cutoff = 4)
 ```
 
 ```{r projection_plot, fig.width=18, fig.height=14}
-seu.q$cell_subtype2 <- seu.q$cell_subtype
+seu.q$cell_subtype.orig <- seu.q$cell_subtype
 
-PlotProjection(seu.q, reference, split.by = "cell_subtype2", 
+PlotProjection(seu.q, reference, split.by = "cell_subtype.orig", 
                ref.color.by = "cell_subtype",
                ref.size = .5, ref.alpha = .3, query.size = 1, 
                query.alpha = .5, n.row = 4)
@@ -205,8 +202,9 @@ pheatmap::pheatmap(data.stat, display_numbers = T, number_format = "%.0f",
                    number_color = "black")
 ```
 
+
 <details>
-  <summary>**Session Info**</summary>
+<summary>**Session Info**</summary>
 ```{r}
 sessionInfo()
 ```

@@ -1,0 +1,163 @@
+---
+title: "Training the ensemble SVM model to predict cell type directly"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  #tidy = TRUE,
+  #tidy.opts = list(width.cutoff = 95),
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+ProjectSVR also implemented a wrapper `FitEnsemblMultiClassif()` to train an ensemble SVM model for cell type auto-annotation. In this tutorial, we show how to train such a model and use it for cell type annotation.
+
+## Download Related Dataset
+
+```{r load_packages, results='hide'}
+library(ProjectSVR)
+library(Seurat)
+library(tidyverse)
+options(timeout = max(3600, getOption("timeout")))
+`%notin%` <- Negate(`%in%`)
+```
+
+```{r download_dataset, eval=FALSE}
+if (!dir.exists("models")) dir.create("models")
+if (!dir.exists("reference")) dir.create("reference")
+if (!dir.exists("query")) dir.create("query")
+
+# reference model
+download.file(url = "https://zenodo.org/record/8350732/files/model.disco_pbmc.rds", 
+              destfile = "models/model.disco_pbmc.rds")
+
+# reference data
+download.file(url = "https://zenodo.org/record/8350746/files/mTCA.seurat.slim.qs", 
+              destfile = "reference/DISCO_hPBMCs.seurat.slim.qs")
+# query data
+download.file(url = "https://zenodo.org/record/8350748/files/query_hPBMCs.seurat.slim.qs", 
+              destfile = "query/query_hPBMCs.seurat.slim.qs")
+```
+
+## Build Reference Model
+
+```{r load_reference, fig.width=9, fig.height=5}
+data("pals")
+seu.ref <- qs::qread("reference/DISCO_hPBMCs.seurat.slim.qs")
+p1 <- DimPlot(seu.ref, pt.size = .4) + scale_color_manual(values = pals$disco_blood)
+LabelClusters(p1, id = "ident")
+```
+
+### Transfer raw count matrix to gene set score matrix
+
+```{r add_gene_module_score}
+reference <- readRDS("models/model.disco_pbmc.rds")
+top.genes <- reference$genes$gene.sets
+bg.genes <- reference$genes$bg.genes
+reference$gss.method
+
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, bg.genes = bg.genes, method = "UCell", cores = 5)
+# The signature score matrix is stored in 'SignatureScore' assay
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+```
+
+### Training reference model
+
+```{r train_model}
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+cell.types <- FetchData(seu.ref, vars = c("cell_type", "cell_subtype"))
+batch.size = 8000 # number of subsampled cells for each SVR model 
+n.models = 20      # number of SVR models trained
+svm.model <- FitEnsemblMultiClassif(feature.mat = gss.mat, 
+                                    cell.types = cell.types,
+                                    batch.size = batch.size,
+                                    n.models = n.models, 
+                                    balance.cell.type = TRUE, # balanced sampling for each cell label
+                                    cores = 10)
+```
+
+```{r save_model}
+## save model to reference object
+reference$models$cell_type <- svm.model
+
+qs::qsave(reference, "models/model.disco_pbmc.v2.qs")
+```
+
+## Cell Type Annotation
+
+```{r auto_annotation, fig.width=12, fig.height=5}
+seu.q <- qs::qread("query/query_hPBMCs.seurat.slim.qs")
+
+## map query
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, add.map.qual = T, ncores = 10)
+seu.q
+
+## predict cell type
+gss.mat.q <- FetchData(seu.q, vars = rownames(seu.q))
+pred.res <- PredictNewdata(feature.mat = gss.mat.q, model = svm.model, cores = 10)
+head(pred.res)
+
+## save results to seurat object
+seu.q$cell_type.pred <- pred.res$cell_type
+seu.q$cell_subtype.pred <- pred.res$cell_subtype
+
+## visualization
+p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = c("cell_type")) + ggsci::scale_color_d3("category20")
+p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = c("cell_type.pred")) + ggsci::scale_color_d3()
+
+p1 <- LabelClusters(p1, id = "cell_type")
+p2 <- LabelClusters(p2, id = "cell_type.pred")
+
+p1 + p2
+```
+
+```{r, visualization, fig.width=14, fig.height=5}
+p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = c("cell_subtype")) + ggsci::scale_color_d3("category20")
+p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = c("cell_subtype.pred")) + scale_color_manual(values = pals$disco_blood)
+
+p1 <- LabelClusters(p1, id = "cell_subtype")
+p2 <- LabelClusters(p2, id = "cell_subtype.pred")
+
+p1 + p2
+```
+
+The ProjectSVR gives pretty good cell type predictions. It is quite interesting that the ProjectSVR predicts GZMK+ NK cells. To verify this, we check a marker combination and found that GZMK+ NK cells can be defined by NKG7+/GZMK+/CD16-/CD8A-, which supports the ProjectSVR's prediction.
+
+```{r markers, fig.width=10, fig.height=8}
+DefaultAssay(seu.q) <- "RNA"
+seu.q[["RNA"]]@counts <- seu.q[["RNA"]]@data
+seu.q <- NormalizeData(seu.q)
+FeaturePlot(seu.q, reduction = "ref.umap", features = c("GZMK", "FCGR3A", "NKG7", "CD8A"), ncol = 2)
+```
+
+
+<details>
+<summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+

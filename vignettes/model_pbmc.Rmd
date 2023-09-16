@@ -1,0 +1,157 @@
+---
+title: "Build reference model for DISCO blood atlas"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  #tidy = TRUE,
+  #tidy.opts = list(width.cutoff = 95),
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+In this tutorial, we showed how to build the reference model for blood atlas from [DISCO](https://www.immunesinglecell.org/) database. This case showed that once the reference atlas is well annotated and integrated into a harmonious low dimensional embeddings, we can easily training a supported vector regression model from gene set scores to representated embeddings via `ProjectSVR`.
+
+## Download Reference Atlas
+
+```{r load_packages, results='hide'}
+library(ProjectSVR)
+library(Seurat)
+library(tidyverse)
+options(timeout = max(3600, getOption("timeout")))
+`%notin%` <- Negate(`%in%`)
+```
+
+```{r download_dataset, eval=FALSE}
+if (!dir.exists("reference")) dir.create("reference")
+
+download.file(url = "https://zenodo.org/record/8350746/files/DISCO_hPBMCs.seurat.slim.qs", 
+              destfile = "reference/DISCO_hPBMCs.seurat.slim.qs")
+```
+
+## Build Reference Model
+
+```{r load_reference, fig.width=9, fig.height=5}
+data("pals")
+seu.ref <- qs::qread("reference/DISCO_hPBMCs.seurat.slim.qs")
+p1 <- DimPlot(seu.ref, pt.size = .4) + scale_color_manual(values = pals$disco_blood)
+LabelClusters(p1, id = "ident")
+```
+
+### Extract signatures
+
+Here we extract the top25 marker genes for each cell type (ribosomal and mitochondrial genes were removed).
+
+```{r find_markers}
+data(ribo.genes)
+
+table(Idents(seu.ref))
+
+## To accelerate the calculation, we downsampled 200 cells from each cluster
+seu.ref.ds <- subset(seu.ref, downsample = 200)
+
+## The raw count matrix stores in `data` slot, so we copy it to `counts` slot for normalization.
+seu.ref.ds[["RNA"]]@counts <- seu.ref.ds[["RNA"]]@data
+seu.ref.ds <- NormalizeData(seu.ref.ds)
+
+## Parallel calculation of the cell markers.
+all.markers <- mcFindAllMarkers(seu.ref.ds, do.flatten = F, n.cores = 10)
+
+top.genes <- lapply(all.markers, function(xx){
+  yy <- subset(xx, p_val_adj < 1e-6 & avg_log2FC > log2(1.5))
+  yy <- subset(yy, Gene.name.uniq %notin% ribo.genes)
+  yy <- yy[!grepl("^MT-", yy$Gene.name.uniq), ]
+  head(yy$Gene.name.uniq, 25)
+})
+
+sapply(top.genes, length)
+# rename the gene set
+# [Note] Avoid to use '_' or '-' in the gene set names.
+names(top.genes) <- paste0("feature.", 1:length(top.genes))
+# the background genes are the union of all markers
+bg.genes <- do.call(c, top.genes) %>% unique()
+```
+
+### Transfer raw count matrix to gene set score matrix
+
+```{r add_gene_module_score}
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, bg.genes = bg.genes, 
+                              method = "UCell", cores = 5)
+# The signature score matrix is stored in 'SignatureScore' assay
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+```
+
+### Training reference model
+
+```{r train_model}
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
+batch.size = 8000 # number of subsampled cells for each SVR model 
+n.models = 20      # number of SVR models trained
+umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
+                             emb.mat = embeddings.df,
+                             batch.size = batch.size,
+                             n.models = n.models,
+                             cores = 10)
+```
+
+### Create reference object
+
+1. meta.data: cell meta data (embeddings & cell type information)
+
+2. gss.method: method used in `ComputeModuleScore()`
+
+3. [optional] colors: for plots
+
+4. [optional] text.pos: text annotation on the reference plots
+
+```{r create_reference}
+meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "cell_type", "cell_subtype") )
+colors <- pals$disco_blood
+text.pos <- data.frame(
+  x = c(11,  2, 6, -2, 0, 13, 10, 14,  7, -2,  1, 3, 4,   7),
+  y = c(-4, -4, 1,  1, 5,  2,  4, 12, 16, 12, 15, 9, 6.5, 5),
+  label = c("B", "pDC", "plasma", "cDC", "mono", "CD4 T", "Treg", "CD8 T", 
+            "NK", "neutrophil", "platelet", "RBC", "HSC", "T/NK pro")
+)
+
+reference <- CreateReference(umap.model = umap.model, 
+                             gene.sets = top.genes, 
+                             bg.genes = bg.genes,
+                             meta.data = meta.data, 
+                             gss.method = "UCell",
+                             colors = colors, 
+                             text.pos = text.pos)
+
+dir.create("models")
+saveRDS(reference, "models/model.disco_pbmc.rds")
+```
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>

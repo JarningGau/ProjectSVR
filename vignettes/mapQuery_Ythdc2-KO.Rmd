@@ -1,0 +1,129 @@
+---
+title: "Project the Ythdc2-KO germ cells onto mTCA"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+We introduced another example about how to utilize the pre-build reference models of ProjectSVR to map the query data onto the reference.
+
+In the original study [<sup>1</sup>](#refer-anchor-1), the authors collected the purified 4N germ cells from P10 males of heterozygous and homozygous Ythdc2 KO aninmals for scRNA-seq to examine the gene regulation consequences due to loss of Ythdc2. As we known, the 4N germ cells were rare in P10 male mice. So the author pooled cells from two individual mice of the same genotype together to obtain sufficient number of cells, which lead a batch effect from inter samples and can not be corrected directly due to the unknown sample labels (See figure 4B in the original paper). This more or less affects our interpretation of the data.
+
+In this tutorial, we project the Ythdc2-KO and WT germ cells onto the mouse testicular cell atlas (mTCA). We will see that ProjectSVR can correct the batch effect from different individuals naturally although we do not introduce the sample labels to the reference model. This suggest the supported vector regression (SVR) model has good generalization performance.
+
+## Download Related Dataset
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+
+options(timeout = max(3600, getOption("timeout")))
+```
+
+```{r download_dataset, eval=FALSE}
+# reference model
+if (!dir.exists("models")) dir.create("models")
+download.file(url = "https://zenodo.org/record/8350732/files/model.mTCA.rds", 
+              destfile = "models/model.mTCA.rds")
+# query data
+if (!dir.exists("query")) dir.create("query")
+download.file(url = "https://zenodo.org/record/8350748/files/query_Ythdc2-KO.seurat.slim.qs", 
+              destfile = "query/query_Ythdc2-KO.seurat.slim.qs")
+```
+
+## Map Query to Reference
+
+### Reference mapping
+
+```{r reference_mapping, fig.width=4, fig.height=3}
+reference <- readRDS("models/model.mTCA.rds")
+seu.q <- qs::qread("query/query_Ythdc2-KO.seurat.slim.qs")
+
+samples <- c("WT", "KO1", "KO2")
+names(samples) <- c("GSM5883825", "GSM5883826", "GSM5883827")
+seu.q$sample.id <- factor(samples[seu.q$orig.ident], levels = samples)
+
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, add.map.qual = T, ncores = 10)
+
+DimPlot(seu.q, reduction = "ref.umap", group.by = "sample.id")
+```
+
+### Maping quality
+
+```{r map_quality, fig.width=14, fig.height=4}
+## cutoff by adjusted p value
+MapQCPlot(seu.q, p.adj.cutoff = 0.1)
+```
+
+Visualize the projected query cells onto the reference atlas.
+
+```{r projection_plot, fig.width=20, fig.height=7}
+PlotProjection(seu.q, reference, split.by = "genotype", ref.color.by = "cell_type", 
+               ref.size = .5, ref.alpha = .3, query.size = 1, query.alpha = .5, 
+               n.row = 1, legend.ncol = 2)
+```
+
+### Label transfer
+
+```{r label_transfer, fig.width=10, fig.height=4}
+seu.q <- subset(seu.q, mapQ.p.adj < 0.1)
+seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cell_type")
+```
+
+We perform majority vote on a over clustering results by kmeans (on gene set score matrix) to generate the consensus cell annotations.
+
+```{r majority_vote, fig.width=10, fig.height=4}
+feature.mat <- FetchData(seu.q, vars = rownames(seu.q))
+cell.types <- FetchData(seu.q, vars = c("knn.pred.celltype"))
+knn.pred.mv <- MajorityVote(feature.mat = feature.mat, cell.types = cell.types, k = 100, min.prop = 0.3)
+seu.q$knn.pred.celltype.major_votes <- knn.pred.mv$knn.pred.celltype.major_votes
+
+DimPlot(seu.q, group.by = "knn.pred.celltype.major_votes", split.by = "sample.id") + 
+  ggsci::scale_color_d3()
+```
+
+### Alluvia plot
+
+```{r alluvia_plot, fig.width=6, fig.height=5}
+AlluviaPlot(seu.q@meta.data, by = "genotype", 
+            fill = "knn.pred.celltype.major_votes",
+            colors = reference$ref.cellmeta$colors,
+            bar.width = .5, legend.ncol = 1)
+```
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+
+## References
+
+-   [1] [Li L, et al. The XRN1-regulated RNA helicase activity of YTHDC2 ensures mouse fertility independently of m6A recognition. Mol Cell. 2022 May 5;82(9):1678-1690.e12. doi: 10.1016/j.molcel.2022.02.034. PMID: 35305312.](https://pubmed.ncbi.nlm.nih.gov/35305312/)

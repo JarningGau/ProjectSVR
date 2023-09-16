@@ -1,0 +1,171 @@
+---
+title: "Project the perturbed germ cells onto mouse testicular cell atlas"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+To illustrate ProjectSVR's ability to enable the interpretation of defects of perturbed stages in a continuous developmental trajectory. Here, we provide a tutorial about how to project Zfp541-KO and WT germ cells [<sup>1</sup>](#refer-anchor-1) onto mouse testicular cell atlas using a pre-build model.
+
+In this tutorial, we do not utilize the advanced wrapper functions (`MapQuery` and `LabelTransfer`) to illustrate how to use the low level functions.
+
+
+## Download Related Dataset
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+
+options(timeout = max(3600, getOption("timeout")))
+```
+
+```{r download_dataset, eval=FALSE}
+# reference model
+if (!dir.exists("models")) dir.create("models")
+download.file(url = "https://zenodo.org/record/8350732/files/model.mTCA.rds", 
+              destfile = "models/model.mTCA.rds")
+# query data
+if (!dir.exists("query")) dir.create("query")
+download.file(url = "https://zenodo.org/record/8350748/files/query_Zfp541-KO.seurat.slim.qs", 
+              destfile = "query/query_Zfp541-KO.seurat.slim.qs")
+```
+
+## Map Query to Reference
+
+### Reference mapping
+
+```{r reference_mapping, fig.width=12, fig.height=5}
+reference <- readRDS("models/model.mTCA.rds")
+seu.q <- qs::qread("query/query_Zfp541-KO.seurat.slim.qs")
+
+genotype <- c("WT", "Zfp541-KO")
+names(genotype) <- c("WT", "Z541")
+seu.q$genotype <- factor(genotype[seu.q$orig.ident], levels = genotype)
+
+## transform the counts matrix to gene set score matrix for query data
+reference$gss.method # The reference model utilizes `AUCell` for gene set scoring.
+top.genes <- reference$genes$gene.sets
+gss.mat <- ComputeModuleScore(seu.q[["RNA"]]@data, gene.sets = top.genes, method = "AUCell", cores = 10)
+
+## Project query into reference's UMAP spaces using gene set score matrix.
+proj.res <- ProjectNewdata(feature.mat = gss.mat, model = reference$models$umap, cores = 10)
+## Returning a `CellProject` object.
+proj.res
+## write the projected embeddings to original seurat object
+seu.q[["ref.umap"]] <- CreateDimReducObject(proj.res@embeddings, key = "refUMAP_", assay = "RNA")
+
+## visualization
+p1 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "genotype")
+p2 <- DimPlot(seu.q, reduction = "ref.umap", group.by = "annotation", label = T) # original cell labels
+(p1 + p2) & ggsci::scale_color_d3("category20")
+```
+
+### Mapping quality
+
+```{r map_qc_threshold, fig.width=5, fig.height=3}
+## calculate the map quanlity metrics (mean.knn.dist)
+proj.res <- AddProjQual(object = proj.res, k = 20, repeats = 1e4)
+head(proj.res@cellmeta)
+
+## store the results in original seurat object
+seu.q$mean.knn.dist <- proj.res@cellmeta$mean.knn.dist
+seu.q$mapQ.p.val <- proj.res@cellmeta$p.val
+seu.q$mapQ.p.adj <- proj.res@cellmeta$p.adj
+
+## visualization
+data.plot <- FetchData(seu.q, vars = c(paste0("refUMAP_", 1:2), "mean.knn.dist", "mapQ.p.adj"))
+
+ggplot(data.plot, aes(mean.knn.dist, -log10(mapQ.p.adj))) +
+  geom_point(size = .3) + 
+  geom_vline(xintercept = 2.4, linetype = "dashed", color = "blue")
+```
+
+```{r map_qc_plot, fig.width=14, fig.height=4}
+## cutoff by adjusted p value
+MapQCPlot(seu.q, p.adj.cutoff = 1e-3)
+## or mean.knn.dist
+MapQCPlot(seu.q, map.q.cutoff = 2.4)
+```
+
+### Label transfer
+
+```{r label_transfer, fig.width=8, fig.height=4}
+## drop the low-quality mapped cells
+seu.q <- subset(seu.q, mean.knn.dist < 2.4)
+
+## input for KNN label transfer
+ref.cellmeta <- reference$ref.cellmeta$meta.data 
+# reference cell embeddings
+ref.emb <- ref.cellmeta[, paste0("UMAP_", 1:2)]
+# reference cell labels
+ref.labels <- ref.cellmeta[["cell_type"]]
+names(ref.labels) <- rownames(ref.cellmeta)
+# query cell embeddings
+query.emb <- seu.q[["ref.umap"]]@cell.embeddings
+
+## KNN label transfer
+knn.pred.res <- KnnLabelTransfer(query.emb = query.emb, ref.emb = ref.emb, 
+                                 ref.labels = ref.labels, k = 100)
+## over-cluster and then performing majority voting for each clusters
+knn.pred.mv <- MajorityVote(feature.mat = gss.mat, 
+                            cell.types = knn.pred.res[, c("labels"), drop = F], 
+                            k = 100, min.prop = 0.3)
+
+## save results to seurat object
+seu.q$knn.pred.celltype <- knn.pred.res$labels
+seu.q$knn.pred.celltype.major_votes <- knn.pred.mv$labels.major_votes
+ref.celltype.levels <- levels(ref.cellmeta[["cell_type"]])
+seu.q$knn.pred.celltype <- factor(seu.q$knn.pred.celltype, levels = ref.celltype.levels)
+seu.q$knn.pred.celltype.major_votes <- factor(seu.q$knn.pred.celltype.major_votes, 
+                                              levels = ref.celltype.levels)
+
+DimPlot(seu.q, reduction = "ref.umap", group.by = "knn.pred.celltype.major_votes", 
+        split.by = "genotype") + ggsci::scale_color_d3()
+```
+
+```{r compare_heatmap, fig.width=6, fig.height=5}
+data.stat <- table(seu.q$annotation, seu.q$knn.pred.celltype.major_votes)
+data.stat <- data.stat[, colSums(data.stat) > 0]
+
+pheatmap::pheatmap(data.stat, display_numbers = T, number_format = "%.0f", 
+                   cluster_rows = F, cluster_cols = F,
+                   number_color = "black")
+```
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
+## References
+
+<div id="refer-anchor-1"></div>
+- [1] [Xu J, et al. ZFP541 maintains the repression of pre-pachytene transcriptional programs and promotes male meiosis progression. Cell Rep. 2022 Mar 22;38(12):110540. doi: 10.1016/j.celrep.2022.110540. PMID: 35320728.](https://pubmed.ncbi.nlm.nih.gov/35320728/)

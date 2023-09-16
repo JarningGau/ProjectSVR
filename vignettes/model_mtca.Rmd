@@ -1,0 +1,251 @@
+---
+title: "Build reference model for mouse testicular cell atlas"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+In this tutorial, we showed how to build a reference model for mouse testicular atlas.  As germ cells undergo continuous development called spermatogenesis, we introduced consensus non-negative matrix factorization (cNMF) for feature selection rather than identifying cell markers via differential expression analysis usually adopted in the discrete cell clusters.
+
+## Download Reference Atlas
+
+```{r load_packages, results='hide'}
+library(ProjectSVR)
+library(Seurat)
+library(tidyverse)
+options(timeout = max(3600, getOption("timeout")))
+`%notin%` <- Negate(`%in%`)
+OUTPATH = "mTCA"
+dir.create(OUTPATH)
+
+get_label_pos <- function(data, emb = "tSNE", group.by="ClusterID") {
+  new.data <- data[, c(paste(emb, 1:2, sep = "_"), group.by)]
+  colnames(new.data) <- c("x","y","cluster")
+  clusters <- names(table(new.data$cluster))
+  new.pos <- lapply(clusters, function(i) {
+    tmp.data = subset(new.data, cluster == i)
+    data.frame(
+      x = median(tmp.data$x),
+      y = median(tmp.data$y),
+      label = i)
+  })
+  do.call(rbind, new.pos)
+}
+```
+
+```{r download_dataset, eval=FALSE}
+if (!dir.exists("reference")) dir.create("reference")
+
+download.file(url = "https://zenodo.org/record/8350746/files/mTCA.seurat.slim.qs", 
+              destfile = "reference/mTCA.seurat.slim.qs")
+```
+
+
+## Feature Selection
+
+### Load reference data
+
+```{r referenc_plot, fig.width=11, fig.height=5}
+data("pals")
+seu.ref <- qs::qread("reference/mTCA.seurat.slim.qs")
+
+data.plot <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "Cell_type_symbol", "Cell_type_id"))
+
+data.plot$Cell_type_id <- paste0("m", data.plot$Cell_type_id)
+text.pos <- get_label_pos(data.plot, emb = "UMAP", group.by = "Cell_type_id")
+
+ggplot(data.plot, aes(UMAP_1, UMAP_2, color = Cell_type_symbol), pt.size = .4) +
+  geom_point(size = .1, alpha = .3) +
+  scale_color_manual(values = pals$mtca) +
+  ggtitle("Mouse testicular cell atlas") + 
+  geom_text(inherit.aes = F, data = text.pos,
+            mapping = aes(x, y, label = label), size = 3) +
+  guides(color = guide_legend(ncol = 2, override.aes = list(size = 4, alpha = 1))) +
+  DimTheme()
+```
+
+### Make meta cells
+
+Here, we introduce the cNMF methods for signature extraction.
+
+To speed up the cNMF procedure, we utilize the metacell method that merges the adjacent cells in UMAP space into metacells.
+
+```{r meta_cells, fig.width=8, fig.height=4}
+## Grid the adjacent cells in the UMAP space.
+emb.mat <- seu.ref[["umap"]]@cell.embeddings
+gd <- EstimateKnnDensity(emb.mat = emb.mat)
+
+gd <- subset(gd, bin.density.threshold=1e-4, n.cells.threshold=10)
+plot(gd)
+
+## Make meta cells
+metacell.counts <- MergeCells(seu.ref[["RNA"]]@data, gd = gd, by = "mesh.points", cores = 10)
+dim(metacell.counts)
+```
+
+Now we compress the 188,862 cells into 3934 meta cells.
+
+```{r prepare_input_for_cnmf, eval=FALSE}
+## The genes expressed in at least 20 cells were kept.
+expr.in.cells <- Matrix::rowSums(metacell.counts > 0)
+metacell.counts <- metacell.counts[expr.in.cells >= 20, ]
+
+## Drop mitochondrial genes
+is.mito <- grepl("^mt-", rownames(metacell.counts))
+metacell.counts <- metacell.counts[!is.mito, ]
+
+## Transfer the Seurat format into h5ad file.
+seu.mc <- CreateSeuratObject(counts = metacell.counts)
+sceasy::convertFormat(seu.mc, from = "seurat", to = "anndata", main_layer = "counts", 
+                      outFile = file.path(OUTPATH, "mTCA.metacells.h5ad"))
+## Save HVGs: generated in data integration step
+writeLines(seu.ref[["RNA"]]@var.features, file.path(OUTPATH, "mTCA.metacells.hvgs.txt"))
+
+rm(seu.mc)
+rm(metacell.counts)
+gc()
+```
+
+### Run cNMF
+
+```{r cnmf_k_selection, eval=FALSE}
+FindOptimalK(counts.fn = file.path(OUTPATH, "mTCA.metacells.h5ad"),
+             run.name = "K20_K100_by5", 
+             components = seq(20,100,5), 
+             genes.fn = file.path(OUTPATH, "mTCA.metacells.hvgs.txt"),
+             out.path = OUTPATH,
+             n.iter = 20, 
+             cores = 20)
+```
+
+This will generate a deagnostic plot for the K selection under `mTCA/K20_K100_by5/K20_K100_by5.k_selection.png`.
+
+![](../reference/figures/perturbed-gc-cnmf-k-selection.png)
+
+The solution of K = 70 makes the decomposition the less reconstruction error without the loss of solution robustness.
+
+```{r run_cnmf, eval=FALSE}
+RunCNMF(counts.fn = file.path(OUTPATH, "mTCA.metacells.h5ad"), 
+        run.name = "K70", 
+        out.path = OUTPATH, 
+        K = 70, 
+        genes.fn = file.path(OUTPATH, "mTCA.metacells.hvgs.txt"),
+        n.iter = 50, # here we run more iterations.
+        cores = 20, 
+        local.density.cutoff = 0.2,
+        n.top.genes = 100, 
+        show.clustering = TRUE)
+```
+
+
+### Transfer raw count matrix to gene set score matrix
+
+Here, we try the [AUCell](https://bioconductor.org/packages/release/bioc/html/AUCell.html) method for calculating signature scores.
+
+```{r add_gene_module_score, eval=FALSE}
+top.genes <- read.table(file.path(OUTPATH, "K70/top100_genes.k_70.dt_0_2.txt"), header = T)
+names(top.genes) <- paste0("feature.", 1:length(top.genes))
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "AUCell", cores = 5)
+# The signature score matrix is stored in 'SignatureScore' assay
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+saveRDS(gss.mat, file.path(OUTPATH, "mTCA.AUCell.rds"))
+```
+
+```{r feature_plot, fig.width=28, fig.height=30}
+gss.mat <- readRDS(file.path(OUTPATH, "mTCA.AUCell.rds"))
+data.plot <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2) )
+data.plot <- cbind(gss.mat, data.plot)
+
+data.plot <- data.plot %>% 
+  pivot_longer(cols = 1:70, names_to = "component", values_to = "score")
+
+data.plot %>% 
+  group_split(component) %>% 
+  map(
+    ~ggplot(., aes(UMAP_1, UMAP_2, color = score)) + 
+      geom_point(size = .5) +
+      scale_color_viridis_c() +
+      facet_grid(~ component, labeller = function(x) label_value(x, multi_line = FALSE)) + 
+      theme_bw(base_size = 15)
+  ) %>% 
+  cowplot::plot_grid(plotlist = ., align = 'hv', ncol = 7)
+```
+
+## Build Reference Model
+
+### Training reference model
+
+```{r train_model_umap}
+# Training model
+gss.mat <- readRDS(file.path(OUTPATH, "mTCA.AUCell.rds"))
+embeddings.df <- FetchData(seu.ref, vars = paste0("UMAP_", 1:2))
+batch.size = 8000 # number of subsampled cells for each SVR model
+n.models = 20     # number of SVR models trained
+umap.model <- FitEnsembleSVM(feature.mat = gss.mat,
+                             emb.mat = embeddings.df,
+                             batch.size = batch.size,
+                             n.models = n.models,
+                             cores = 10)
+```
+
+### Create reference object
+
+1. meta.data: cell meta data (embeddings & cell type information)
+
+2. gss.method: method used in `ComputeModuleScore()`
+
+3. [optional] colors: for plots
+
+4. [optional] text.pos: text annotation on the reference plots
+
+```{r create_reference}
+meta.data <- FetchData(seu.ref, vars = c(paste0("UMAP_", 1:2), "Cell_type_symbol"))
+colnames(meta.data)[3] <- c("cell_type")
+
+colors <- pals$mtca
+
+reference <- CreateReference(umap.model = umap.model,
+                             gene.sets = top.genes,
+                             meta.data = meta.data,
+                             gss.method = "AUCell",
+                             colors = colors,
+                             text.pos = text.pos)
+
+if (!dir.exists("models")) dir.create("models")
+saveRDS(reference, "models/model.mTCA.rds")
+```
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>

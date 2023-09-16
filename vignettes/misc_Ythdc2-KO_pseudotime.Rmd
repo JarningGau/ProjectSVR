@@ -1,0 +1,174 @@
+---
+title: "Training reference model for pseudotime using ProjectSVR"
+output:
+  html_document:
+    theme: united
+  pdf_document: default
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  fig.width = 10,
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  time_it = TRUE
+)
+```
+
+To be note, we can build reference model on not only UMAP embeddings, but also any biological meaningful continuous variable, such as pseudotime via `ProjectSVR`. Here, we show how to build supported vector regression (SVR) model for pseudotime of germ cells in mTCA.
+
+
+## Download Related Dataset
+
+```{r load_packages, results='hide'}
+library(Seurat)
+library(ProjectSVR)
+library(tidyverse)
+
+options(timeout = max(3600, getOption("timeout")))
+```
+
+```{r download_dataset, eval=FALSE}
+# reference model
+if (!dir.exists("models")) dir.create("models")
+download.file(url = "https://zenodo.org/record/8350732/files/model.mTCA.rds", 
+              destfile = "models/model.mTCA.rds")
+# reference atlas
+if (!dir.exists("reference")) dir.create("reference")
+download.file(url = "https://zenodo.org/record/8350746/files/mTCA.seurat.slim.qs", 
+              destfile = "reference/mTCA.seurat.slim.qs")
+
+# query data
+if (!dir.exists("query")) dir.create("query")
+download.file(url = "https://zenodo.org/record/8350748/files/query_Ythdc2-KO.seurat.slim.qs", 
+              destfile = "query/query_Ythdc2-KO.seurat.slim.qs")
+```
+
+## Build SVR Model of Pseudotime
+
+```{r load_reference, fig.width=5, fig.height=4}
+reference <- readRDS("models/model.mTCA.rds")
+seu.ref <- qs::qread("reference/mTCA.seurat.slim.qs")
+## subset germ cells
+germ.cells <- rownames(subset(seu.ref@meta.data, !is.na(Pseudotime_dm)))
+seu.ref <- subset(seu.ref, cells = germ.cells)
+seu.ref
+
+FeaturePlot(seu.ref, reduction = "umap", features = "Pseudotime_dm", raster = TRUE) + 
+  scale_color_viridis_c()
+```
+
+```{r build_reference}
+## gene set scoring
+top.genes <- reference$genes$gene.sets
+seu.ref <- ComputeModuleScore(seu.ref, gene.sets = top.genes, method = "AUCell", cores = 10)
+Assays(seu.ref)
+DefaultAssay(seu.ref) <- "SignatureScore"
+gss.mat <- FetchData(seu.ref, vars = rownames(seu.ref))
+
+## training model
+pst.mat <- FetchData(seu.ref, vars = "Pseudotime_dm")
+colnames(pst.mat) <- "pseudotime_mTCA"
+pst.model <- FitEnsembleSVM(feature.mat = gss.mat, emb.mat = pst.mat, n.models = 20, cores = 10)
+
+## save model to reference object
+reference$models$pseudotime <- pst.model
+
+saveRDS(reference, "models/model.mTCA.v2.rds")
+```
+
+## Reference Mapping
+
+```{r reference_mapping}
+seu.q <- qs::qread("query/query_Ythdc2-KO.seurat.slim.qs")
+
+## map query
+seu.q <- ProjectSVR::MapQuery(seu.q, reference = reference, add.map.qual = T, ncores = 10)
+
+## label transfer
+seu.q <- subset(seu.q, mapQ.p.adj < 0.1)
+seu.q <- ProjectSVR::LabelTransfer(seu.q, reference, ref.label.col = "cell_type")
+
+## majority votes
+feature.mat <- FetchData(seu.q, vars = rownames(seu.q))
+cell.types <- FetchData(seu.q, vars = c("knn.pred.celltype"))
+knn.pred.mv <- MajorityVote(feature.mat = feature.mat, cell.types = cell.types, k = 100, min.prop = 0.3)
+seu.q$knn.pred.celltype.major_votes <- knn.pred.mv$knn.pred.celltype.major_votes
+
+## predict the pseudotime
+gss.mat.q <- FetchData(seu.q, vars = rownames(seu.q))
+proj.res <- ProjectNewdata(feature.mat = gss.mat.q, model = pst.model, cores = 10)
+
+## save results to the original seurat object
+seu.q$pseudotime.pred <- proj.res@embeddings[,1]
+```
+
+
+```{r, fig.width=8, fig.height=4}
+query.plot <- FetchData(seu.q, vars = c("genotype", "pseudotime.pred", "knn.pred.celltype.major_votes"))
+colnames(query.plot)[3] <- "celltype"
+
+# remove somatic cells
+query.plot <- subset(query.plot, celltype != "m24-PTM_Myh11") 
+ 
+cal_cum <- . %>% 
+  arrange(pseudotime.pred) %>% 
+  mutate(rank = order(pseudotime.pred)) %>% 
+  mutate(cum = rank/max(rank))
+
+ctrl_cum <- query.plot %>% subset(genotype == "WT") %>% cal_cum()
+test_cum <- query.plot %>% subset(genotype == "Ythdc2-KO") %>% cal_cum()
+
+segment.plot <- query.plot %>% group_by(celltype) %>% 
+  summarise(min.pt = quantile(pseudotime.pred, 0.3),
+            max.pt = quantile(pseudotime.pred, 0.7)) %>% 
+  arrange(min.pt)
+N <- nrow(segment.plot)
+
+data.plot <- rbind(ctrl_cum, test_cum) 
+
+p1 <- ggplot(data.plot, aes(pseudotime.pred, cum, color = celltype)) + geom_point()
+
+data.plot %>% 
+  ggplot(aes(pseudotime.pred, cum)) + 
+  geom_jitter(inherit.aes = F, data = subset(data.plot, genotype == 'WT'), 
+              aes(pseudotime.pred, -0.05, color = celltype, show.legend = TRUE), 
+              height = 0.05, size = .5, alpha = 1, show.legend = F) +
+  geom_jitter(inherit.aes = F, data = subset(data.plot, genotype == 'Ythdc2-KO'), 
+              aes(pseudotime.pred, -0.2, color = celltype), 
+              height = 0.05, size = .5, alpha = 1, show.legend = F) +
+  annotate("text", x = c(38,38), y = c(-0.05, -0.2), label = c("WT", "KO")) + 
+  geom_line(aes(linetype=genotype)) + 
+  geom_vline(xintercept = 53, linetype="dashed", color="blue") +
+  labs(x = "Pseudotime", y = "Cumulative proportion of cells") + 
+  theme_bw(base_size = 15) + 
+  theme(legend.title = element_blank(),
+        legend.position = c(0.2, 0.85),
+        legend.background = element_rect(size=.5, color="black")) + 
+  cowplot::get_legend(p1)
+```
+
+The pseudotime characterizes the progress of spermatogenesis in mTCA, through the distribution of the predicted pseudotime between WT and Ythdc2-KO germ cells, we can interpret that the Ythdc2-KO germ cells arrest at the pre-leptotene stage at transcriptome level.
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
