@@ -138,7 +138,7 @@ ProjectNewdata <- function(feature.mat, model, do.norm='L2', int.fun=stats::medi
   no.features <- setdiff(model$features, colnames(feature.mat))
   if (length(no.features) > 0) {
     warning(sprintf("These features are not in your inputs: %s\n. Filling with zeros.", paste(no.features, collapse = " ")))
-    zeros <- matrix(rep(0, nrow(newdata)*length(no.features)), ncol = length(no.features)) %>% as.data.frame()
+    zeros <- matrix(rep(0, nrow(feature.mat)*length(no.features)), ncol = length(no.features)) %>% as.data.frame()
     colnames(zeros) <- no.features
     newdata <- cbind(feature.mat, zeros)[, model$features]
   } else {
