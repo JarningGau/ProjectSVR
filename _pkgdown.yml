@@ -5,7 +5,6 @@ destination: docs
 template:
   params:
     bootswatch: flatly
-    ganalytics: G-W1XR84YEPZ
 
 navbar:
   structure:

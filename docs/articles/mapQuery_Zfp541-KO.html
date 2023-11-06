@@ -16,13 +16,7 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=G-W1XR84YEPZ"></script><script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-W1XR84YEPZ');
-</script>
+<![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
     
@@ -130,7 +124,7 @@
       <h1 data-toc-skip>Project the perturbed germ cells onto mouse
 testicular cell atlas</h1>
             
-            <h4 data-toc-skip class="date">Compiled: September 16,
+            <h4 data-toc-skip class="date">Compiled: November 06,
 2023</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/JarningGau/ProjectSVR/blob/HEAD/vignettes/mapQuery_Zfp541-KO.Rmd" class="external-link"><code>vignettes/mapQuery_Zfp541-KO.Rmd</code></a></small>
@@ -216,12 +210,12 @@ to use the low level functions.</p>
 <span><span class="va">proj.res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AddProjQual.html">AddProjQual</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">proj.res</span>, k <span class="op">=</span> <span class="fl">20</span>, repeats <span class="op">=</span> <span class="fl">1e4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">proj.res</span><span class="op">@</span><span class="va">cellmeta</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                       mean.knn.dist p.val p.adj</span></span>
-<span><span class="co">## WT_AAACCCAAGCGATCGA-1     0.4638491     0     0</span></span>
-<span><span class="co">## WT_AAACCCAAGCTAGAAT-1     0.3524113     0     0</span></span>
-<span><span class="co">## WT_AAACCCACAACGGTAG-1     0.5480502     0     0</span></span>
-<span><span class="co">## WT_AAACCCACAATATCCG-1     0.7887308     0     0</span></span>
-<span><span class="co">## WT_AAACCCACAGGCGATA-1     0.3368921     0     0</span></span>
-<span><span class="co">## WT_AAACCCACATATGGCT-1     0.3911962     0     0</span></span></code></pre>
+<span><span class="co">## WT_AAACCCAAGCGATCGA-1     0.4955652     0     0</span></span>
+<span><span class="co">## WT_AAACCCAAGCTAGAAT-1     0.3168841     0     0</span></span>
+<span><span class="co">## WT_AAACCCACAACGGTAG-1     0.5385500     0     0</span></span>
+<span><span class="co">## WT_AAACCCACAATATCCG-1     0.6730108     0     0</span></span>
+<span><span class="co">## WT_AAACCCACAGGCGATA-1     0.3341204     0     0</span></span>
+<span><span class="co">## WT_AAACCCACATATGGCT-1     0.4219758     0     0</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## store the results in original seurat object</span></span>
 <span><span class="va">seu.q</span><span class="op">$</span><span class="va">mean.knn.dist</span> <span class="op">&lt;-</span> <span class="va">proj.res</span><span class="op">@</span><span class="va">cellmeta</span><span class="op">$</span><span class="va">mean.knn.dist</span></span>
