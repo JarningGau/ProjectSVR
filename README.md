@@ -134,6 +134,11 @@ reticulate::py_install("anndata")
 reticulate::py_install("cnmf")
 ```
 
+## Benchmark results
+
+Benchmark results of ProjectSVR and other reference mapping algorithms
+were listed at <https://github.com/JarningGau/ProjectSVR-benchmark/>
+
 ## Code of Conduct
 
 Please note that the ProjectSVR project is released with a [Contributor
