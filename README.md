@@ -1,7 +1,7 @@
 
 # ProjectSVR <img src="man/figures/ProjectSVR-logo.png" align="right" width=80px/>
 
-[![](https://img.shields.io/badge/devel%20version-0.2.0-green.svg)](https://github.com/JarningGau/ProjectSVR)
+[![](https://img.shields.io/badge/devel%20version-0.2.1-green.svg)](https://github.com/JarningGau/ProjectSVR)
 
 `ProjectSVR` is a machine learning-based algorithm for mapping the query
 cells onto well-constructed reference atlas.
@@ -10,20 +10,30 @@ cells onto well-constructed reference atlas.
 
 ## Related resources
 
+### Quick start dataset
+
+The data of [quick
+start](https://jarninggau.github.io/ProjectSVR/articles/quick_start.html)
+for ProjectSVR is available at <https://zenodo.org/record/8147304> or
+百度云盘(<https://pan.baidu.com/s/13qSpcaldyQ9MUVCIaYSUIQ>) 提取码: psvr
+
 ### Reference atlas
 
 The reference cell atlases involved in ProjectSVR paper are available at
-<https://zenodo.org/record/8350746>.
+<https://zenodo.org/record/8350746> or
+百度云盘(<https://pan.baidu.com/s/1fNG5PcgqWiPZi3erkewA5w>) 提取码: psvr
 
 ### Query dataset
 
 The query datasets involved in ProjectSVR paper are available at
-<https://zenodo.org/record/8350748>.
+<https://zenodo.org/record/8350748> or
+百度云盘(<https://pan.baidu.com/s/1yGdhcwBIxodinRpppPHkQw>) 提取码: psvr
 
 ### Pre-built reference model
 
 You can download pre-build reference models from
-[Zenodo](https://zenodo.org/record/8350732).
+[Zenodo](https://zenodo.org/record/8350732) or
+百度云盘(<https://pan.baidu.com/s/1yBWifQHimRNun1jgcYVEPg>) 提取码: psvr
 
 | Name                                                            | Source                                         | Version | Download                                                                         |
 |-----------------------------------------------------------------|------------------------------------------------|---------|----------------------------------------------------------------------------------|
