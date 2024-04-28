@@ -4,7 +4,7 @@
 
   Now the reference mapping will be accelerated using the following R codes.
   ```R
-  seu.q <- ProjectSVR(seu.q, reference, split.by = "orig.ident")
+  seu.q <- ProjectSVR::MapQuery(seu.q, reference, split.by = "orig.ident")
   ```
 
 # ProjectSVR 0.2.0
