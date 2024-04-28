@@ -4,7 +4,14 @@
 \alias{MapQuery}
 \title{A wrapper for mapping query data onto reference.}
 \usage{
-MapQuery(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1)
+MapQuery(
+  seu.q,
+  reference,
+  assay.q = "RNA",
+  add.map.qual = FALSE,
+  ncores = 1,
+  split.by = NULL
+)
 }
 \arguments{
 \item{seu.q}{A query Seurat object.}
@@ -16,6 +23,9 @@ MapQuery(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1)
 \item{add.map.qual}{Whether add mapping quality metric (mean kNN distance). Default: FALSE}
 
 \item{ncores}{Number of threads for calculation. Default: 1}
+
+\item{split.by}{Attribute for splitting query Seurat object, projecting the query object by a list of subsetted object. 
+Default: NULL}
 }
 \value{
 A Seurat object. The projected reference embeddings were saved in a

@@ -1,5 +1,6 @@
 #' @include projection.R
 #' @include label_transfer.R
+#' @importFrom magrittr %>%
 NULL
 
 #' Create reference models
@@ -66,13 +67,40 @@ CreateReference <- function(umap.model, gene.sets, meta.data, bg.genes = NULL,
 #' @param assay.q The assay used for reference mapping. Default: RNA
 #' @param add.map.qual Whether add mapping quality metric (mean kNN distance). Default: FALSE
 #' @param ncores Number of threads for calculation. Default: 1
+#' @param split.by Attribute for splitting query Seurat object, projecting the query object by a list of subsetted object.
+#' Default: NULL
 #' @return A Seurat object. The projected reference embeddings were saved in a
 #' dimension reduction object named 'ref.umap'. The gene set score were saved in
 #' a new assay named 'SignatureScore'.
 #' @concept reference_mapping
 #' @export
-#'
-MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1) {
+MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1, split.by = NULL) {
+  if (is.null(split.by)) {
+    seu.q <- .MapQuery(seu.q, reference = reference, assay.q = assay.q, add.map.qual = add.map.qual, ncores = ncores)
+  } else {
+    obj.list <- Seurat::SplitObject(seu.q, split.by = split.by)
+    obj.list <- lapply(1:length(obj.list), function(i) {
+      message(glue::glue("Mapping {names(obj.list)[i]} ..."))
+      .MapQuery(obj.list[[i]], reference = reference, assay.q = assay.q, add.map.qual = add.map.qual, ncores = ncores)
+    })
+    new.assay <- lapply(obj.list, function(obj) {
+      obj[["SignatureScore"]]
+    }) %>% base::Reduce(merge, .)
+    embeddings <- lapply(obj.list, function(obj) {
+      obj[["ref.umap"]]@cell.embeddings
+    }) %>% base::Reduce(rbind, .)
+    meta.data <- lapply(obj.list, function(obj) {
+      obj@meta.data
+    }) %>% base::Reduce(rbind, .)
+    seu.q[["SignatureScore"]] <- new.assay
+    seu.q <- Seurat::AddMetaData(seu.q, metadata = meta.data[, c("mean.knn.dist", "mapQ.p.val", "mapQ.p.adj")])
+    seu.q[["ref.umap"]] <- Seurat::CreateDimReducObject(embeddings, key = "refUMAP_", assay = assay.q)
+  }
+  return(seu.q)
+}
+
+## internal function
+.MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, ncores = 1) {
   ## check parameters
   if (!inherits(seu.q, "Seurat")) stop("seu.q argument must be a Seurat object")
   if (class(reference) != "reference.model") stop("Invalid reference argument")
@@ -104,6 +132,7 @@ MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, nc
     seu.q$mapQ.p.val <- proj.obj@cellmeta$p.val
     seu.q$mapQ.p.adj <- proj.obj@cellmeta$p.adj
   }
+  Seurat::DefaultAssay(seu.q) <- assay.q
   return(seu.q)
 }
 
