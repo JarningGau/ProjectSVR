@@ -89,11 +89,13 @@ MapQuery <- function(seu.q, reference, assay.q = "RNA", add.map.qual = FALSE, nc
     embeddings <- lapply(obj.list, function(obj) {
       obj[["ref.umap"]]@cell.embeddings
     }) %>% base::Reduce(rbind, .)
-    meta.data <- lapply(obj.list, function(obj) {
-      obj@meta.data
-    }) %>% base::Reduce(rbind, .)
+    if (add.map.qual) {
+      meta.data <- lapply(obj.list, function(obj) {
+        obj@meta.data
+      }) %>% base::Reduce(rbind, .)
+      seu.q <- Seurat::AddMetaData(seu.q, metadata = meta.data[, c("mean.knn.dist", "mapQ.p.val", "mapQ.p.adj")])
+    }
     seu.q[["SignatureScore"]] <- new.assay
-    seu.q <- Seurat::AddMetaData(seu.q, metadata = meta.data[, c("mean.knn.dist", "mapQ.p.val", "mapQ.p.adj")])
     seu.q[["ref.umap"]] <- Seurat::CreateDimReducObject(embeddings, key = "refUMAP_", assay = assay.q)
   }
   return(seu.q)
