@@ -8,6 +8,13 @@ cells onto well-constructed reference atlas.
 
 <img src="man/figures/ProjectSVR-workflow.png" width="600" />
 
+## Citation
+
+ProjectSVR has been published in *Briefings in Bioinformatics*:
+
+Jianing Gao, et al. (2025). "ProjectSVR: mapping single-cell RNA-seq data to reference atlases by supported vector regression." *Briefings in Bioinformatics*, Volume 26, Issue 6, bbaf586.  
+[https://doi.org/10.1093/bib/bbaf586](https://doi.org/10.1093/bib/bbaf586)
+
 ## Related resources
 
 ### Quick start dataset

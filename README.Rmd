@@ -25,6 +25,9 @@ library("badger")
 <img src="man/figures/ProjectSVR-workflow.png" width="600" />
 
 
+## Citation
+Jianing Gao, et al., ProjectSVR: mapping single-cell RNA-seq data to reference atlases by supported vector regression, Briefings in Bioinformatics, Volume 26, Issue 6, November 2025, bbaf586, https://doi.org/10.1093/bib/bbaf586
+
 ## Related resources
 
 ### Quick start dataset
